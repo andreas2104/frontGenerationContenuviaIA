@@ -1,21 +1,12 @@
 'use client'
 
-import ModelIAInputModal from "@/app/component/ui/modelIA/modelIAInputModal";
-import { useState } from "react";
+import ModelIATable from "@/app/component/ui/modelIA/modelIATable";
 
 export default function ModelIAPage() {
-  const [open, setOpen] = useState(true);
-
-  const handleCloseModal = () => {
-    setOpen(false);
-  }
 
   return (
     <div>
-      {open &&(
-        <ModelIAInputModal onClose={handleCloseModal} modelIA={null}/>  
-      )
-      }
+        <ModelIATable/>
     </div>
   )
 }

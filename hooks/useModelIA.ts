@@ -1,6 +1,6 @@
 import { addModelIA, deleteModelIA, fetchModelIA, updateModelIA } from "@/services/modelIAService";
 import { ModelIA } from "@/types/modelIA";
-import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation,useQuery, useQueryClient } from "@tanstack/react-query"
 
 export const useModelIA = () => {
   const queryClient = useQueryClient();
@@ -10,7 +10,7 @@ export const useModelIA = () => {
     queryFn: fetchModelIA,
     refetchOnWindowFocus: false,
   })
-
+console.log("data on model console:", {modelIA, error});
   const addMutation = useMutation({
     mutationFn: (modelIA:ModelIA) => addModelIA(modelIA),
     onSuccess: () => {

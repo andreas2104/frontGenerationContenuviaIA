@@ -59,7 +59,7 @@ export const addProjet = async (projet: ProjetCreate): Promise<{ message: string
     throw error;
   }
 }
-// export const addProjet = async (projet: ProjetCreate): Promise<Projet> => {
+// export const addProjet = async tr(projet: ProjetCreate): Promise<Projet> => {
 //   console.log("Donnees envoiees vesr backend:", projet);
 //   try {
 //     const response = await fetch(`${apiUrl}/projets`, {
