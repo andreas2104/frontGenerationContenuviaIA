@@ -154,7 +154,7 @@ export default function ModelIAInputModal({ onClose, modelIA }: {onClose: () => 
               onChange={handleChange}
               placeholder="Coût par token"
               className="border w-full p-2 rounded"
-              step="0.0001" // Permet les valeurs décimales
+              step="0.0001" 
               required
             />
           </div>

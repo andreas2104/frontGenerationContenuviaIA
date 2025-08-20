@@ -1,6 +1,4 @@
 import { ModelIA } from "@/types/modelIA";
-import { error } from "console";
-import { response } from "express";
 
 const apiUrl = 'http://127.0.0.1:5000/api';
 

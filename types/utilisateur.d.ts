@@ -3,6 +3,7 @@ export interface Utilisateur {
   nom: string;
   prenom: string;
   email: string;
-  password: string;
-  role: string;
+  type_compte: "admin" | "user" | "free" | "premium";
+  date_creation: string;
+  actif: boolean;
 }

@@ -1,47 +1,52 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Utilisateur } from "@/types/utilisateur";
-import { addUtilisateur, deleteUtilisateur, fetchUtilisateurs, updateUtilisateur } from "@/services/utilisateurService";
+import { deleteUtilisateur, fetchUtilisateurs, updateUtilisateur } from "@/services/utilisateurService
+const useAuth = () => {
+  
+  const token = 'VOTRE_TOKEN_DE_TEST'; 
+  return { token };
+};
 
 export const useUtilisateurs = () => {
   const queryClient = useQueryClient();
+  const { token } = useAuth();
 
-  // return useQuery({
-  //   queryKey: ['utilisateurs'],
-  //   queryFn: fetchUtilisateurs,
-  //   refetchOnWindowFocus: false,
-  // })
-  const {data: utilisateurs = [], isLoading, error}  = useQuery({
-      queryKey: ['utilisateurs'],
-      queryFn: fetchUtilisateurs,
-      refetchOnWindowFocus: false,
-  })
   
-  const addMutation = useMutation({
-    mutationFn: (utilisateur: Utilisateur) => addUtilisateur(utilisateur),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilisateurs'] });}
+  const {
+    data: utilisateurs = [],
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['utilisateurs', token], 
+    queryFn: () => fetchUtilisateurs(token),
+    enabled: !!token, 
+    refetchOnWindowFocus: false,
   });
-
+ 
   const updateMutation = useMutation({
-    mutationFn: (utilisateur: Utilisateur) => updateUtilisateur(utilisateur),
+    mutationFn: (utilisateur: Partial<Utilisateur>) => {
+  
+      return updateUtilisateur(utilisateur, token);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilisateurs'] });
-    }
+    },
   });
-
+  
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteUtilisateur(id),
+    mutationFn: (id: number) => {
+      return deleteUtilisateur(id, token);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilisateurs'] });
-    }
+    },
   });
 
   return {
     utilisateurs,
     isLoading,
     error,
-    addUtilisateur: addMutation.mutate,
     updateUtilisateur: updateMutation.mutate,
     deleteUtilisateur: deleteMutation.mutate
-  }
-}
+  };
+};
