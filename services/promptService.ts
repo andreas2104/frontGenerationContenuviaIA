@@ -53,9 +53,9 @@ export const updatePrompt = async (prompt: Prompt): Promise<Prompt[]> => {
   }
 }
 
-export const deletePrompt = async (prompt:Prompt): Promise<void> => {
+export const deletePrompt = async (id:number): Promise<void> => {
   try {
-    const response = await fetch(`${apiUrl}/prompts/${prompt.id}`,{
+    const response = await fetch(`${apiUrl}/prompts/${id}`,{
       method: 'DELETE',
     });
     if (!response.ok) {

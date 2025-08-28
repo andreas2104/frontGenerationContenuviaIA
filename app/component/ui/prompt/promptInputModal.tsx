@@ -1,6 +1,7 @@
 'use client'
 
 import { usePrompt } from "@/hooks/usePrompt";
+import { fetchPrompt } from "@/services/promptService";
 import { Prompt } from "@/types/prompt";
 import { useEffect, useState } from "react";
 
@@ -57,7 +58,7 @@ export default function PrompInputModal({onClose, prompt}: {onClose: () => void,
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -75,10 +76,12 @@ export default function PrompInputModal({onClose, prompt}: {onClose: () => void,
 
       if (prompt) {
         updatePrompt(promptData);
+        alert("data updated succes");
       } else {
         addPrompt(promptData);
+        alert("data add succes");
       }
-      alert("data add succes");
+      await fetchPrompt();
       onClose();
     } catch (error) {
       console.error("Erreur lors de la soumission du formulaire:", error);

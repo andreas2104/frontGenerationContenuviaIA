@@ -1,6 +1,20 @@
 import { Contenu } from "@/types/contenu";
-
 const apiUrl = 'http://127.0.0.1:5000/api';
+
+export interface ContenuPayload {
+  id_utilisateur: number;
+  id_prompt: number;
+  id_model: number;
+  id_template?: number;
+  titre?: string;
+}
+
+export interface ContenuResponse {
+  message: string;
+  contenu: string;
+  type: string;
+}
+
 
 export const fetchAllContenu = async (): Promise<Contenu[]> => {
   try {
@@ -63,6 +77,27 @@ export const deleteContenu = async (contenuId: number): Promise<void> => {
     }
   } catch (error) {
     console.error("Erreur lors de la suppression du contenu :", error);
+    throw error;
+  }
+};
+
+
+export const generateContenu = async (payload: ContenuPayload): Promise<ContenuResponse> => {
+  try {
+    const response = await fetch(`${apiUrl}/generer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      throw new Error("Erreur lors de la génération du contenu.");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Erreur lors de la génération du contenu :", error);
     throw error;
   }
 };
