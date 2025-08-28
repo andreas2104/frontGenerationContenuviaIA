@@ -1,6 +1,7 @@
-import { addContenu, deleteContenu, fetchAllContenu, updateContenu } from "@/services/contenuService";
+import { addContenu, ContenuPayload, ContenuResponse, deleteContenu, fetchAllContenu, generateContenu, updateContenu } from "@/services/contenuService";
 import { Contenu } from "@/types/contenu";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 export const useContenu = () => {
   const queryClient = useQueryClient();
@@ -40,4 +41,15 @@ export const useContenu = () => {
     updateContenu: updateMutation.mutate,
     deleteContenu: deleteMutation.mutate,
   };
+};
+
+export const useGenerateContenu = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<ContenuResponse, Error, ContenuPayload>({
+    mutationFn: generateContenu,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contenus"] });
+    },
+  });
 };

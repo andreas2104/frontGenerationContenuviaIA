@@ -53,9 +53,9 @@ export const updateModelIA = async (modelIA: ModelIA): Promise<ModelIA[]> => {
   }
 }
 
-export const deleteModelIA = async (modelIA:ModelIA): Promise<void> => {
+export const deleteModelIA = async (id:number): Promise<void> => {
   try {
-    const response = await fetch(`${apiUrl}/modelIA/${modelIA.id}`, {
+    const response = await fetch(`${apiUrl}/modelIA/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
