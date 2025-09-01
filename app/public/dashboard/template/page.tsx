@@ -1,4 +1,5 @@
-import TemplateTableModal from "@/app/component/ui/template/templateTable";
+'use client'
+import TemplateTableModal from "@/app/component/ui/template/templateTableModal";
 
 export default function TemplatePage() {
   return(
