@@ -1,9 +1,10 @@
+
 'use client'
 
 import { useTemplate } from "@/hooks/useTemplate";
 import { Template } from "@/types/template";
 import { useState } from "react";
-import TemplateInputModal from "./templateInput"; 
+import TemplateInputModal from "./templateInput";
 
 export default function TemplateTableModal() {
   const { templates, isPending, deleteTemplate } = useTemplate();
@@ -17,7 +18,8 @@ export default function TemplateTableModal() {
       </div>
     );
   }
-  console.log('data',templates);
+
+  console.log('data', templates);
 
   const handleAdd = () => {
     setSelectedTemplate(null);
@@ -31,13 +33,13 @@ export default function TemplateTableModal() {
 
   const handleDelete = async (id: number) => {
     if (confirm("Voulez-vous vraiment supprimer ce template ?")) {
-      deleteTemplate(id);
+      await deleteTemplate(id);
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedTemplate(null); 
+    setSelectedTemplate(null);
   };
 
   return (
@@ -66,16 +68,22 @@ export default function TemplateTableModal() {
               >
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                    {t.nom_template}
+                    {t.nom_template || 'Sans titre'}
                   </h2>
                   <p className="text-gray-600 mb-4 line-clamp-4">
-                    {t.structure}
+                    {typeof t.structure === 'string'
+                      ? t.structure
+                      : JSON.stringify(t.structure, null, 2)}
+                  </p>
+                  <p className="text-gray-600 mb-4 line-clamp-4">
+                    Type de sortie: {t.type_sortie || 'N/A'}
                   </p>
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-4">
-                  <span>Type de sortie: {t.type_sortie}</span>
                   {t.public && (
-                    <span className="ml-4 px-2 py-0.5 bg-green-200 text-green-800 rounded-full font-medium text-xs">Public</span>
+                    <span className="ml-4 px-2 py-0.5 bg-green-200 text-green-800 rounded-full font-medium text-xs">
+                      Public
+                    </span>
                   )}
                 </div>
                 <div className="flex justify-end space-x-2">

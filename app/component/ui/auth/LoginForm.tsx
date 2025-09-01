@@ -19,7 +19,7 @@ const LoginForm = () => {
       {
         onSuccess: () => {
           // Redirection vers le tableau de bord après une connexion réussie
-          router.push('/dashboard');
+          router.push('/public/dashboard');
         },
       }
     );
