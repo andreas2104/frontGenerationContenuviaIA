@@ -12,6 +12,9 @@ export default function ContenuTablePage() {
   if (isPending) return <p>Chargement...</p>;
   if (error) return <p>Erreur: {error.message}</p>;
 
+
+
+  console.log('data in content page:',contenus)
   return (
     <div className="p-6 text-black">
       <h1 className="text-2xl font-bold mb-4">Gestion des Contenus</h1>
