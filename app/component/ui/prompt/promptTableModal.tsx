@@ -46,7 +46,7 @@ export default function PromptTableModal() {
           <h1 className="text-3xl font-bold text-gray-800">Mes Prompts</h1>
           <button
             onClick={handleAdd}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+            className="bg-green-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-green-700 transition-colors"
           >
             + Ajouter
           </button>

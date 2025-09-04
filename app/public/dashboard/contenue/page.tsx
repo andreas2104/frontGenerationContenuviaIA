@@ -1,18 +1,21 @@
 'use client'
 
-import PromptInput from "@/app/component/ui/prompt/promptInputModal";
-import { useState } from "react";
+import ContenuTablePage from "@/app/component/ui/contenu/contenuTableModal";
+import DataContenu from "@/app/component/ui/contenu/dataContenu";
+// import PromptInput from "@/app/component/ui/prompt/promptInputModal";
+// import { useState } from "react";
 
 export default function PrompPage() {
-  const [open, setOpen] = useState(true);
-  const handleCloseModal = () => {
-    setOpen(false);
-  }
+  // const [open, setOpen] = useState(true);
+  // const handleCloseModal = () => {
+  //   setOpen(false);
+  // }
   return(
     <div>
-      {open && (
+      <DataContenu/>
+      {/* {open && (
         <PromptInput onClose={handleCloseModal} prompt={null}/>
-      )}
+      )} */}
     </div>
   )
 }

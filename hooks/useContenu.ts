@@ -1,7 +1,6 @@
-import { addContenu, ContenuPayload, ContenuResponse, deleteContenu, fetchAllContenu, generateContenu, updateContenu } from "@/services/contenuService";
+import {  ContenuPayload, ContenuResponse, deleteContenu, fetchAllContenu, generateContenu, updateContenu } from "@/services/contenuService";
 import { Contenu } from "@/types/contenu";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 
 export const useContenu = () => {
   const queryClient = useQueryClient();
@@ -12,12 +11,12 @@ export const useContenu = () => {
     refetchOnWindowFocus: false,
   });
 
-  const addMutation = useMutation({
-    mutationFn: (contenu: Contenu) => addContenu(contenu),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contenus'] });
-    },
-  });
+  // const addMutation = useMutation({
+  //   mutationFn: (contenu: Contenu) => generateContenu(contenu),
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['contenus'] });
+  //   },
+  // });
 
   const updateMutation = useMutation({
     mutationFn: (contenu: Contenu) => updateContenu(contenu),
@@ -37,7 +36,7 @@ export const useContenu = () => {
     contenus,
     isPending,
     error,
-    addContenu: addMutation.mutate,
+    // addContenu: addMutation.mutate,
     updateContenu: updateMutation.mutate,
     deleteContenu: deleteMutation.mutate,
   };

@@ -46,7 +46,7 @@ export default function ModelIATable() {
         <h1 className="text-3xl font-bold text-gray-800">Nos Models IA</h1>
         <button 
         onClick={handleAdd}
-        className="bg-green-600 text-white  px-6 py-2 font-semibold hover:bg-green-700 transition-colors">
+        className="bg-green-600 text-white  px-6 py-2 font-semibold rounded-md hover:bg-green-700 transition-colors">
           + Ajouter
         </button>
       </div>
