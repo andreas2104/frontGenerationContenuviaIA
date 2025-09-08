@@ -40,16 +40,16 @@ export default function ModelIATable() {
 
 
   return (
-    <div className="p-4 bg-gray-100 min-h-screen">
-    <div className="container mx-auto">
-      <div className="flex justify-between items-center mb-6"> 
+    <div className="p-8 space-y-8">
+    <div className="flex justify-between items-center mb-6">
+      {/* <div className="flex justify-between items-center mb-6">  */}
         <h1 className="text-3xl font-bold text-gray-800">Nos Models IA</h1>
         <button 
         onClick={handleAdd}
         className="bg-green-600 text-white  px-6 py-2 font-semibold rounded-md hover:bg-green-700 transition-colors">
           + Ajouter
         </button>
-      </div>
+      {/* </div> */}
       {modelIA.length === 0 ? (
         <div className="text-center text-gray-500 text-lg mt-12">
           Aucun model trouvé. Ajoutez-en un pour commencer !
