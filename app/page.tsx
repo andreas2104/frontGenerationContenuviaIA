@@ -2,7 +2,7 @@ import BodyPage from "./component/Body";
 import FooterPage from "./component/Footer";
 import HeaderPage from "./component/Header";
 import NavPage from "./component/Nav";
-import LoginPage from "./login/page";
+import LoginPage from "./public/dashboard/login/page";
 
 
 export default function Home() {

@@ -1,4 +1,4 @@
-import LoginPage from "../login/page";
+import LoginPage from "../public/dashboard/login/page";
 // import LoginForm from "./ui/auth/LoginForm";
 
 export default function BodyPage() {
