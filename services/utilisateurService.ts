@@ -27,7 +27,7 @@ export const fetchUtilisateurs = async (token: string): Promise<Utilisateur[]> =
 
 export const getUtilisateurById = async (id: number, token: string): Promise<Utilisateur> => {
    try {
-    const response = await fetch(`${apiUrl}/utilisateurs`, {
+    const response = await fetch(`${apiUrl}/utilisateurs/$id`, {
       headers: getAuthHeaders(token)
     });
     if (!response.ok) {

@@ -1,4 +1,4 @@
-import ProjetTableModal from "@/app/component/ui/projetTableModal"
+import ProjetTableModal from "@/app/component/ui/projet/projetTableModal"
 import PrompInputModal from "@/app/component/ui/prompt/promptInputModal";
 
 export default function ProjetPage() {

@@ -1,10 +1,10 @@
 import { Utilisateur } from "@/types/utilisateur";
 
-const apiUrl = 'http://127.0.0.1:5000/api/auth';
+const apiUrl = 'http://127.0.0.1:5000/api';
 
 export interface AuthResponse {
   token: string;
-  utilisateur: Utilisateur;
+  utilisateur: any;
 }
 
 export interface LoginData {
@@ -25,7 +25,7 @@ export interface RegisterData {
  */
 export const login = async (data: LoginData): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${apiUrl}/login`, {
+    const response = await fetch(`${apiUrl}/utilisateurs/login`, {  // ✅ URL corrigée
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -52,7 +52,7 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
  */
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${apiUrl}/register`, {
+    const response = await fetch(`${apiUrl}/utilisateurs/register`, {  // ✅ URL corrigée
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,3 +71,33 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
     throw error;
   }
 };
+
+/**
+ * Démarre le flux d'authentification Google en redirigenant l'utilisateur.
+ */
+export const googleLoginRedirect = () => {
+  // ✅ URL corrigée pour correspondre au backend
+  window.location.href = `${apiUrl}/oauth/login/google`;
+};
+
+/**
+ * Gère le callback Google et récupère le token
+ */
+// export const handleGoogleCallback = async (code: string): Promise<AuthResponse> => {
+//   try {
+//     const response = await fetch(`${apiUrl}/oauth/google/callback?code=${code}`, {
+//       method: 'GET',
+//       credentials: 'include',
+//     });
+
+//     if (!response.ok) {
+//       const errorData = await response.json();
+//       throw new Error(errorData.error || 'Erreur lors de l\'authentification Google.');
+//     }
+
+//     return response.json();
+//   } catch (error) {
+//     console.error("Erreur callback Google:", error);
+//     throw error;
+//   }
+// };

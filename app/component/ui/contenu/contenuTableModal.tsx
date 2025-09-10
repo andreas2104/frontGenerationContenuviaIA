@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useContenu } from "@/hooks/useContenu";
-import ContenuInputModal from "./contenuInput";
+import ContenuInputModal from "./contenuInputModal";
 
 export default function ContenuTablePage() {
   const { contenus, isPending, error, deleteContenu } = useContenu();

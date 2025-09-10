@@ -19,32 +19,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </li>
             <li>
               <Link href="/projet" className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
-                <span className="font-medium">Student</span>
+                <span className="font-medium">Projet</span>
               </Link>
             </li>
             <li>
               <Link href="/prompt" className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
-                <span className="font-medium">Fees</span>
+                <span className="font-medium">Prompt</span>
               </Link>
             </li>
             <li>
               <Link href="/modelIA" className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
-                <span className="font-medium">Payements</span>
+                <span className="font-medium">ModelIA</span>
               </Link>
             </li>
             <li>
               <Link href="/template" className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
-                <span className="font-medium">Center</span>
+                <span className="font-medium">Template</span>
               </Link>
             </li>
             <li>
               <Link href="/generer" className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
-                <span className="font-medium">Center</span>
+                <span className="font-medium">Generer</span>
               </Link>
             </li>
               <li>
               <Link href="/historique" className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
-                <span className="font-medium">Center</span>
+                <span className="font-medium">Historique</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/utilisateurs" className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
+                <span className="font-medium">Utilisateur</span>
               </Link>
             </li>
           </ul>

@@ -1,27 +1,44 @@
 "use client";
 
 import { useLogin } from "@/hooks/useAuth";
+import { googleLoginRedirect } from "@/services/authService";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [googleError, setGoogleError] = useState<string | null>(null);
 
   const { mutate: loginUser, isPending, isError, error } = useLogin();
+
+  // Vérifier s'il y a une erreur Google dans l'URL
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'google_auth_failed') {
+      setGoogleError('Échec de la connexion Google. Veuillez réessayer.');
+    }
+  }, [searchParams]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     loginUser(
       { email, mot_de_passe: password },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
+          localStorage.setItem('authToken', data.token);
           router.push("/public/dashboard");
         },
       }
     );
+  };
+  
+  const handleGoogleLogin = () => {
+    setGoogleError(null); // Réinitialiser les erreurs
+    googleLoginRedirect();
   };
 
   return (
@@ -33,6 +50,13 @@ export default function LoginPage() {
         <p className="text-center text-gray-500 dark:text-gray-400">
           Connectez-vous pour accéder à votre tableau de bord.
         </p>
+
+        {/* Afficher les erreurs Google */}
+        {googleError && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <p className="text-red-600 text-sm">{googleError}</p>
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
@@ -113,6 +137,29 @@ export default function LoginPage() {
             {isPending ? "Connexion en cours..." : "Se connecter"}
           </button>
         </form>
+
+        <div className="relative flex items-center justify-center my-4">
+          <span className="absolute px-3 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800">
+            OU
+          </span>
+          <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+        </div>
+
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full flex items-center justify-center py-2 px-4 border border-transparent 
+          rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 
+          bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
+          focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
+          transition-colors duration-200"
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google logo"
+            className="h-5 w-5 mr-2"
+          />
+          Se connecter avec Google
+        </button>
 
         <div className="text-sm flex justify-between">
           <Link

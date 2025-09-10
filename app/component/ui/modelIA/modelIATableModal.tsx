@@ -1,14 +1,13 @@
-
 'use client'
 
-import { useTemplate } from "@/hooks/useTemplate";
-import { Template } from "@/types/template";
+import { useModelIA } from "@/hooks/useModelIA"
+import { ModelIA } from "@/types/modelIA";
 import { useState } from "react";
-import TemplateInputModal from "./templateInputModal";
+import ModelIAInputModal from "./modelIAInputModal";
 
-export default function TemplateTableModal() {
-  const { templates, isPending, deleteTemplate } = useTemplate();
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+export default function ModelIATable() {
+  const { modelIA, isPending, deleteModelIA } = useModelIA();
+  const [selectedModelIA, setSelectedModelIA] = useState<ModelIA | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   if (isPending) {
@@ -19,34 +18,32 @@ export default function TemplateTableModal() {
     );
   }
 
-  console.log('data', templates);
-
   const handleAdd = () => {
-    setSelectedTemplate(null);
+    setSelectedModelIA(null);
     setShowModal(true);
-  };
+  }
 
-  const handleEdit = (template: Template) => {
-    setSelectedTemplate(template);
+  const handleEdit = (model: ModelIA) => {
+    setSelectedModelIA(model);
     setShowModal(true);
-  };
+  }
 
   const handleDelete = async (id: number) => {
-    if (confirm("Voulez-vous vraiment supprimer ce template ?")) {
-      await deleteTemplate(id);
+    if (confirm("Voulez-vous vraiment supprimer ce modèle ?")) {
+      deleteModelIA(id);
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedTemplate(null);
-  };
+    setSelectedModelIA(null);
+  }
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
       <div className="container mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Mes Templates</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Nos Modèles IA</h1>
           <button
             onClick={handleAdd}
             className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
@@ -55,46 +52,43 @@ export default function TemplateTableModal() {
           </button>
         </div>
 
-        {templates.length === 0 ? (
+        {modelIA.length === 0 ? (
           <div className="text-center text-gray-500 text-lg mt-12">
-            Aucun template trouvé. Ajoutez-en un pour commencer !
+            Aucun modèle trouvé. Ajoutez-en un pour commencer !
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map((t) => (
+            {modelIA.map((m) => (
               <div
-                key={t.id}
+                key={m.id}
                 className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col justify-between"
               >
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                    {t.nom_template || 'Sans titre'}
-                  </h2>
-                  <p className="text-gray-600 mb-4 line-clamp-4">
-                    {typeof t.structure === 'string'
-                      ? t.structure
-                      : JSON.stringify(t.structure, null, 2)}
-                  </p>
-                  <p className="text-gray-600 mb-4 line-clamp-4">
-                    Type de sortie: {t.type_sortie || 'N/A'}
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">{m.nom_model}</h2>
+                  <p className="text-gray-600 mb-2">Type: {m.type_model}</p>
+                  <p className="text-gray-600 mb-2">Fournisseur: {m.fournisseur}</p>
+                  <p className="text-gray-600 mb-4 line-clamp-4">URL: {m.api_endpoint}</p>
+                  <p className="text-gray-500 mb-4">
+                    Configuration: {m.parametres_default ? JSON.stringify(m.parametres_default, null, 2) : 'Pas de paramètres'}
                   </p>
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mb-4">
-                  {t.public && (
+                  Cout/token: {m.cout_par_token}
+                  {m.parametres_default && (
                     <span className="ml-4 px-2 py-0.5 bg-green-200 text-green-800 rounded-full font-medium text-xs">
-                      Public
+                      Paramètres
                     </span>
                   )}
                 </div>
                 <div className="flex justify-end space-x-2">
                   <button
-                    onClick={() => handleEdit(t)}
+                    onClick={() => handleEdit(m)}
                     className="text-blue-500 hover:text-blue-700 font-medium"
                   >
                     Modifier
                   </button>
                   <button
-                    onClick={() => handleDelete(t.id)}
+                    onClick={() => handleDelete(m.id)}
                     className="text-red-500 hover:text-red-700 font-medium"
                   >
                     Supprimer
@@ -105,13 +99,12 @@ export default function TemplateTableModal() {
           </div>
         )}
       </div>
-
       {showModal && (
-        <TemplateInputModal
+        <ModelIAInputModal
           onClose={handleCloseModal}
-          template={selectedTemplate}
+          modelIA={selectedModelIA}
         />
       )}
     </div>
-  );
+  )
 }
