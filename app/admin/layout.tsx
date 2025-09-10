@@ -49,6 +49,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span className="font-medium">Center</span>
               </Link>
             </li>
+            <li>
+              <Link href="/utilisateurs" className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
+                <span className="font-medium">Utilisateur</span>
+              </Link>
+            </li>
           </ul>
         </nav>
       </aside>
