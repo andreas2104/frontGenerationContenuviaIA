@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useTemplate } from "@/hooks/useTemplate";
 import { Template } from "@/types/template";
+import { useCurrentUtilisateur } from "@/hooks/useUtilisateurs";
 
-type TypeSortie = 'text' | 'image' | 'video'; // Assurez-vous que cette liste correspond à votre modèle
+type TypeSortie = 'text' | 'image' | 'video'; 
 
 interface TemplateInputModalProps {
   onClose: () => void;
@@ -23,13 +24,14 @@ type FormData = {
 
 export default function TemplateInputModal({ onClose, template, defaultUserId = 0 }: TemplateInputModalProps) {
   const { addTemplate, updateTemplate } = useTemplate();
+  const {isAdmin, utilisateur} = useCurrentUtilisateur();
 
   const [formData, setFormData] = useState<FormData>({
     nom_template: template?.nom_template ?? '',
     structure: template?.structure ?? '',
     variables: template?.variables ? JSON.stringify(template.variables, null, 2) : '',
     type_sortie: (template?.type_sortie as TypeSortie) ?? 'text',
-    public: template?.public ?? true,
+    public: template?.public ?? false,
     id_utilisateur: template?.id_utilisateur ?? defaultUserId,
   });
 
@@ -78,7 +80,8 @@ export default function TemplateInputModal({ onClose, template, defaultUserId = 
     const newTemplate = {
       ...formData,
       variables: parsedVariables,
-      id_utilisateur: formData.public ? null : formData.id_utilisateur,
+      // id_utilisateur: formData.public ? null : formData.id_utilisateur,
+      id_utilisateur: utilisateur?.id ?? null,
     };
     
     if (template) {
@@ -132,7 +135,9 @@ export default function TemplateInputModal({ onClose, template, defaultUserId = 
             <option value="image">Image</option>
             <option value="video">Vidéo</option>
           </select>
-          <div className="flex items-center gap-2">
+          
+          {isAdmin && (
+            <div className="flex items-center gap-2">
             <input
               type="checkbox"
               name="public"
@@ -142,7 +147,9 @@ export default function TemplateInputModal({ onClose, template, defaultUserId = 
             />
             <label htmlFor="public" className="text-sm">Rendre public</label>
           </div>
-          {!formData.public && (
+            )}
+
+          {/* {!formData.public && (
             <input
               type="number"
               name="id_utilisateur"
@@ -152,7 +159,7 @@ export default function TemplateInputModal({ onClose, template, defaultUserId = 
               className="border w-full p-2 rounded"
               readOnly={!!template}
             />
-          )}
+          )} */}
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"

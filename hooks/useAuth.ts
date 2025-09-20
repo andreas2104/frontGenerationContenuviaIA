@@ -1,5 +1,3 @@
-// hooks/useAuth.ts
-
 import { login , register, AuthResponse, LoginData, RegisterData } from '@/services/authService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 /**
@@ -14,6 +12,7 @@ export const useLogin = () => {
     onSuccess: (data: AuthResponse) => {
       // Stocke le token et les infos utilisateur (par ex., dans le localStorage)
       localStorage.setItem('authToken', data.token);
+      localStorage.setItem('user', JSON.stringify(data.utilisateur));
       
       // Met à jour le cache de React Query avec les données de l'utilisateur
       // Cela permet de ne pas avoir à re-fetch les infos utilisateur ailleurs
@@ -25,8 +24,6 @@ export const useLogin = () => {
     },
     onError: (error) => {
       console.error('Erreur de connexion:', error);
-      // Gère l'affichage des messages d'erreur à l'utilisateur
-      // (par ex., avec une librairie de toasts ou une alerte).
       alert(error.message);
     },
   });
@@ -42,10 +39,8 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: (data: RegisterData) => register(data),
     onSuccess: (data: AuthResponse) => {
-      // Stocke le token et les infos utilisateur
       localStorage.setItem('authToken', data.token);
 
-      // Met à jour le cache
       queryClient.setQueryData(['user'], data.utilisateur);
 
       // Redirection après inscription réussie
@@ -53,7 +48,6 @@ export const useRegister = () => {
     },
     onError: (error) => {
       console.error('Erreur d\'inscription:', error);
-      // Gère l'affichage des erreurs
       alert(error.message);
     },
   });
