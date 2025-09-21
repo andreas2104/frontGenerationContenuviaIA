@@ -2,9 +2,11 @@
 
 import { useLogin } from "@/hooks/useAuth";
 import { googleLoginRedirect } from "@/services/authService";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,14 +32,14 @@ export default function LoginPage() {
       {
         onSuccess: (data) => {
           localStorage.setItem('authToken', data.token);
-          router.push("/public/dashboard");
+          router.push("/dashboard");
         },
       }
     );
   };
   
   const handleGoogleLogin = () => {
-    setGoogleError(null); // Réinitialiser les erreurs
+    setGoogleError(null); 
     googleLoginRedirect();
   };
 
@@ -153,9 +155,11 @@ export default function LoginPage() {
           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
           transition-colors duration-200"
         >
-          <img
+          <Image
             src="https://www.svgrepo.com/show/475656/google-color.svg"
             alt="Google logo"
+            width={54}
+            height={52}
             className="h-5 w-5 mr-2"
           />
           Se connecter avec Google

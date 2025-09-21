@@ -25,11 +25,12 @@ export interface RegisterData {
  */
 export const login = async (data: LoginData): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${apiUrl}/utilisateurs/login`, {  // ✅ URL corrigée
+    const response = await fetch(`${apiUrl}/auth/login`, {  
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      mode:'cors',
       body: JSON.stringify(data),
     });
 
@@ -37,8 +38,16 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
       const errorData = await response.json();
       throw new Error(errorData.error || 'Erreur lors de la connexion.');
     }
+    
+    const responseData = await response.json();
+    console.log("Réponse de login:", responseData);
+    localStorage.setItem('access_token', responseData.access_token);
+    console.log('token stocké:', responseData.access_token);
+    
+    // Le backend renvoie 'access_token' et 'refresh_token' avec Flask-JWT-Extended
+    // Vous devez ajuster votre code côté client en fonction.
+    return responseData;
 
-    return response.json();
   } catch (error) {
     console.error("Erreur de connexion:", error);
     throw error;
@@ -52,7 +61,7 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
  */
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${apiUrl}/utilisateurs/register`, {  // ✅ URL corrigée
+    const response = await fetch(`${apiUrl}/auth/register`, { 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -100,4 +109,44 @@ export const googleLoginRedirect = () => {
 //     console.error("Erreur callback Google:", error);
 //     throw error;
 //   }
+// };
+
+// src/services/auth.ts
+
+// import { apiClient } from './apiClient';
+// import { Utilisateur } from "@/types/utilisateur";
+
+// export interface AuthResponse {
+//   token: string;
+//   utilisateur: Utilisateur; // J'ai corrigé le type pour plus de précision
+// }
+
+// export interface LoginData {
+//   email: string;
+//   mot_de_passe: string; 
+// }
+
+// export interface RegisterData {
+//   nom: string;
+//   prenom: string;
+//   email: string;
+//   mot_de_passe: string;
+// }
+
+// export const login = async (data: LoginData): Promise<AuthResponse> => {
+//   return apiClient<AuthResponse>('/auth/login', {
+//     method: 'POST',
+//     body: JSON.stringify(data),
+//   });
+// };
+
+// export const register = async (data: RegisterData): Promise<AuthResponse> => {
+//   return apiClient<AuthResponse>('/auth/register', {
+//     method: 'POST',
+//     body: JSON.stringify(data),
+//   });
+// };
+
+// export const googleLoginRedirect = () => {
+//   window.location.href = `${apiUrl}/oauth/login/google`;
 // };
