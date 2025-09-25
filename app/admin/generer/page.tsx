@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useCatalog } from '@/hooks/useCatalog';
+import { useCatalog } from '@/hooks/useFetch';
 import { useGenerateContenu } from '@/hooks/useContenu';
 import type { ContenuPayload } from '@/services/contenuService';
 

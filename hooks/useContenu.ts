@@ -1,54 +1,51 @@
-import {  ContenuPayload, ContenuResponse, deleteContenu, fetchAllContenu, generateContenu, updateContenu } from "@/services/contenuService";
-import { Contenu } from "@/types/contenu";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+'use client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  fetchContenus,
+  generateContenu,
+  updateContenu,
+  deleteContenu,
+} from '@/services/contenuService';
+import { Contenu, ContenuPayload, ContenuResponse } from '@/types/contenu';
+
 
 export const useContenu = () => {
   const queryClient = useQueryClient();
 
-  const { data: contenus = [], isPending, error } = useQuery({
+  const { data, isPending, error } = useQuery<Contenu[], Error>({
     queryKey: ['contenus'],
-    queryFn: fetchAllContenu,
-    refetchOnWindowFocus: false,
+    queryFn: fetchContenus,
   });
 
-  // const addMutation = useMutation({
-  //   mutationFn: (contenu: Contenu) => generateContenu(contenu),
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ['contenus'] });
-  //   },
-  // });
-
-  const updateMutation = useMutation({
-    mutationFn: (contenu: Contenu) => updateContenu(contenu),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contenus'] });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteContenu(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contenus'] });
-    },
+  const { mutate: remove } = useMutation({
+    mutationFn: deleteContenu,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contenus'] }),
   });
 
   return {
-    contenus,
+    contenus: data ?? [],
     isPending,
     error,
-    // addContenu: addMutation.mutate,
-    updateContenu: updateMutation.mutate,
-    deleteContenu: deleteMutation.mutate,
+    deleteContenu: remove,
   };
 };
+
 
 export const useGenerateContenu = () => {
   const queryClient = useQueryClient();
 
   return useMutation<ContenuResponse, Error, ContenuPayload>({
     mutationFn: generateContenu,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contenus"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contenus'] }),
+  });
+};
+
+
+export const useUpdateContenu = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ message: string }, Error, Contenu>({
+    mutationFn: updateContenu,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contenus'] }),
   });
 };

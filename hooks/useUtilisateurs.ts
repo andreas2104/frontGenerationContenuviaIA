@@ -1,33 +1,32 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Utilisateur } from "@/types/utilisateur";
 import {
-   deleteUtilisateur, 
-    fetchCurrentUtilisateur,
-    fetchUtilisateurs,
-    updateUtilisateur } from "@/services/utilisateurService"
+  fetchCurrentUtilisateur,
+  fetchUtilisateurs,
+  updateUtilisateur,
+  deleteUtilisateur,
+} from "@/services/utilisateurService";
 
-
-// const useAuth = () => {
-
-//   const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1NTY5Nzk5NywianRpIjoiM2I4NjZiYTEtMzA5OC00ZDU1LTgzM2MtZTI1OTJjYTk2NTNjIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MiwibmJmIjoxNzU1Njk3OTk3LCJjc3JmIjoiMjYxZWUxM2MtZjFkMS00YjkyLTljYTMtZTdiMTYzYTJhMTE1IiwiZXhwIjoxNzU1NzAxNTk3fQ.MbPLha10j3Qq9Zl-AzGzuJVpuAZiPFaCdHF8Uj0MTNc'; 
-//   return { token };
-// };
+// Gestion de l'auth local
 const useAuth = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken'): null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
 
   const logout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("authToken");
+      window.location.href = "/login";
     }
   };
+
   return {
     token,
     isAuthenticated: !!token,
-    logout
+    logout,
   };
-  };
+};
 
+// Récupération de l'utilisateur courant
 export const useCurrentUtilisateur = () => {
   const { token, isAuthenticated, logout } = useAuth();
 
@@ -35,67 +34,70 @@ export const useCurrentUtilisateur = () => {
     data: utilisateur,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
-    queryKey: ['currentUtilisateur'],
-    queryFn: fetchCurrentUtilisateur, // ✅ Pas besoin de passer le token, il est récupéré dans la fonction
+    queryKey: ["currentUtilisateur"],
+    queryFn: fetchCurrentUtilisateur, // ✅ récupère le token depuis le service
     enabled: isAuthenticated,
     retry: false,
     refetchOnWindowFocus: false,
   });
 
-  const isAdmin = utilisateur?.type_compte === 'admin';
+  const isAdmin = utilisateur?.type_compte === "admin";
 
-  // Logout automatique en cas d'erreur d'authentification
+  // Déconnexion auto si erreur d'auth
   if (error && !isLoading && isAuthenticated) {
-    console.error('Erreur utilisateur, déconnexion automatique');
+    console.error("Erreur utilisateur, déconnexion automatique");
     logout();
   }
 
   return {
     utilisateur,
-    isLoading,
-    error,
     isAdmin,
+    isLoading,
     isAuthenticated,
+    error,
     logout,
     refetch,
   };
 };
 
+
 export const useUtilisateurs = () => {
   const queryClient = useQueryClient();
   const { token } = useAuth();
-  const {isAdmin} = useCurrentUtilisateur();
-  
+  const { isAdmin } = useCurrentUtilisateur();
+
+ 
   const {
     data: utilisateurs = [],
     isLoading,
-    error
+    error,
   } = useQuery({
-    queryKey: ['utilisateurs', token], 
+    queryKey: ["utilisateurs", token],
     queryFn: () => fetchUtilisateurs(token!),
-    enabled: !!token && isAdmin,
+    enabled: !!token && isAdmin, 
     refetchOnWindowFocus: false,
   });
- 
+
   const updateMutation = useMutation({
     mutationFn: (utilisateur: Partial<Utilisateur>) => {
-      if (!token) throw new Error('token manquant');
+      if (!token) throw new Error("Token manquant");
       return updateUtilisateur(utilisateur, token);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilisateurs'] });
+      queryClient.invalidateQueries({ queryKey: ["utilisateurs"] });
     },
   });
-  
+
+  // Mutation delete utilisateur
   const deleteMutation = useMutation({
     mutationFn: (id: number) => {
-      if (!token) throw new Error('token manquant');
+      if (!token) throw new Error("Token manquant");
       return deleteUtilisateur(id, token);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilisateurs'] });
+      queryClient.invalidateQueries({ queryKey: ["utilisateurs"] });
     },
   });
 
@@ -106,6 +108,6 @@ export const useUtilisateurs = () => {
     updateUtilisateur: updateMutation.mutate,
     deleteUtilisateur: deleteMutation.mutate,
     isUpdating: updateMutation.isPending,
-    isDeleing: deleteMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 };
