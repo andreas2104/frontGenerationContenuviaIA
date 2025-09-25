@@ -52,7 +52,7 @@ export default function HistoriqueContenuPage() {
                   {/* À brancher si tu as une page d’édition */}
                   <a
                     className="text-blue-500 hover:text-blue-700 font-medium"
-                    href={`/contenu/${c.id}`}
+                    href={`/generer/${c.id}`}
                   >
                     Éditer
                   </a>

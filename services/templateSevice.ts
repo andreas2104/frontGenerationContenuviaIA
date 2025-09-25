@@ -1,7 +1,6 @@
 import { Template } from "@/types/template";
 import { apiClient } from "./clientService";
 
-// const apiUrl = 'http://127.0.0.1:5000/api';
 
 export const fetchAllTemplates = async (): Promise<Template[]> => {
   console.log(' Récupération des templates...');
