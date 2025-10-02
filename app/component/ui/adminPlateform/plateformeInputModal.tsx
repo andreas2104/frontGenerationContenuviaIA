@@ -1,19 +1,17 @@
 "use client";
 
 import { usePlateforme } from "@/hooks/usePlateforme";
-import { PlateformeConfig, PlateformeCreate, PlateformeUpdate } from "@/types/plateforme";
+import {
+  PlateformeConfig,
+  PlateformeCreate,
+  PlateformeUpdate,
+} from "@/types/plateforme";
 import { useEffect, useState } from "react";
 
 type FormData = {
   nom: string;
-  config: {
-    client_id: string;
-    client_secret: string;
-    scopes?: string[];
-    [key: string]: any;
-  };
   active: boolean;
-  configurationText: string;
+  configurationText: string; // JSON stringifié
 };
 
 export default function PlateformeInputModal({
@@ -27,18 +25,18 @@ export default function PlateformeInputModal({
 
   const [formData, setFormData] = useState<FormData>({
     nom: plateforme?.nom ?? "",
-    config: plateforme?.config ?? { client_id: "", client_secret: "", scopes: [] },
     active: plateforme?.active ?? true,
-    configurationText: plateforme?.config 
-      ? JSON.stringify(plateforme.config, null, 2) 
-      : JSON.stringify({ client_id: "", client_secret: "", scopes: [] }, null, 2),
+    configurationText: plateforme?.config
+      ? JSON.stringify(plateforme.config, null, 2)
+      : `{\n  "client_id": "",\n  "client_secret": "",\n  "scopes": []\n}`,
   });
+
+  const [jsonError, setJsonError] = useState<string | null>(null);
 
   useEffect(() => {
     if (plateforme) {
       setFormData({
         nom: plateforme.nom,
-        config: plateforme.config,
         active: plateforme.active,
         configurationText: JSON.stringify(plateforme.config, null, 2),
       });
@@ -52,6 +50,14 @@ export default function PlateformeInputModal({
 
     if (name === "configurationText") {
       setFormData((prev) => ({ ...prev, configurationText: value }));
+
+      // Validation JSON en live
+      try {
+        JSON.parse(value);
+        setJsonError(null);
+      } catch {
+        setJsonError("JSON invalide ⚠️");
+      }
     } else if (name === "active") {
       setFormData((prev) => ({ ...prev, active: value === "true" }));
     } else {
@@ -63,66 +69,23 @@ export default function PlateformeInputModal({
     e.preventDefault();
 
     try {
-      // Validation et parsing du JSON
-      let config;
-      try {
-        config = JSON.parse(formData.configurationText);
-      } catch (parseError) {
-        alert("Erreur : Le JSON de configuration n'est pas valide ⚠️");
-        return;
-      }
+      const config = JSON.parse(formData.configurationText);
 
-      // Validation des champs requis
-      if (!formData.nom.trim()) {
-        alert("Erreur : Le nom de la plateforme est requis ⚠️");
-        return;
-      }
-
-      if (!config.client_id || !config.client_secret) {
-        alert("Erreur : client_id et client_secret sont requis dans la configuration ⚠️");
-        return;
-      }
-
-      console.log("Données à envoyer:", { 
-        nom: formData.nom, 
-        config, 
-        active: formData.active 
-      });
+      const payload: PlateformeCreate | (PlateformeUpdate & { id: number }) =
+        plateforme
+          ? { id: plateforme.id, nom: formData.nom, config, active: formData.active }
+          : { nom: formData.nom, config, active: formData.active };
 
       if (plateforme) {
-        // Mode modification
-        const updatePayload: PlateformeUpdate = {
-          nom: formData.nom,
-          config: config,
-          active: formData.active,
-        };
-        
-        await updatePlateforme(plateforme.id, updatePayload);
-        alert("Plateforme mise à jour avec succès ✅");
+        updatePlateforme(payload as PlateformeUpdate & { id: number });
       } else {
-        // Mode création
-        const createPayload: PlateformeCreate = {
-          nom: formData.nom,
-          config: config,
-          active: formData.active,
-        };
-        
-        await addPlateforme(createPayload);
-        alert("Plateforme ajoutée avec succès ✅");
+        addPlateforme(payload as PlateformeCreate);
       }
 
       onClose();
-    } catch (err: any) {
-      console.error("Erreur lors de la soumission :", err);
-      
-      // Affichage d'erreur plus détaillé
-      if (err.response?.data) {
-        alert(`Erreur serveur : ${JSON.stringify(err.response.data)} ⚠️`);
-      } else if (err.message) {
-        alert(`Erreur : ${err.message} ⚠️`);
-      } else {
-        alert("Erreur inconnue lors de la soumission ⚠️");
-      }
+    } catch (err) {
+      console.error("Erreur JSON:", err);
+      setJsonError("Erreur : le JSON est invalide ⚠️");
     }
   };
 
@@ -153,14 +116,15 @@ export default function PlateformeInputModal({
               name="configurationText"
               value={formData.configurationText}
               onChange={handleChange}
-              rows={8}
-              className="mt-1 p-2 w-full border rounded-md text-black font-mono text-sm"
-              placeholder='{"client_id": "votre_client_id", "client_secret": "votre_secret", "scopes": []}'
+              rows={7}
+              className={`mt-1 p-2 w-full border rounded-md text-black ${
+                jsonError ? "border-red-500" : ""
+              }`}
               required
-            />
-            <small className="text-gray-500">
-              Format requis : JSON avec au minimum client_id et client_secret
-            </small>
+            ></textarea>
+            {jsonError && (
+              <p className="text-red-600 text-sm mt-1">{jsonError}</p>
+            )}
           </div>
 
           {/* Actif */}
@@ -182,13 +146,18 @@ export default function PlateformeInputModal({
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400"
+              className="bg-gray-300 text-black px-4 py-2 rounded-md"
             >
               Annuler
             </button>
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              disabled={!!jsonError}
+              className={`px-4 py-2 rounded-md ${
+                jsonError
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
             >
               {plateforme ? "Modifier" : "Ajouter"}
             </button>

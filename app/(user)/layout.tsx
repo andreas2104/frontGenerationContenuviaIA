@@ -61,9 +61,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   { href: '/modelIA', label: 'ModelIA' },
                   { href: '/template', label: 'Template' },
                   { href: '/generer', label: 'Generer' },
-                  { href: '/historique', label: 'Historique' },
+                  { href: '/contenu', label: 'Contenu' },
                   { href: '/utilisateurs', label: 'Utilisateur' },
+                  { href: '/adminPlateforme', label: 'AdminPlateforme' },
                   { href: '/plateforme', label: 'Plateforme' },
+                   { href: '/publication', label: 'Publication' },
                 ].map((link) => (
                   <li key={link.href}>
                     <Link

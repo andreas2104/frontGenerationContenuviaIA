@@ -62,6 +62,7 @@ export const logout = (): void => {
 
 /**
  * Connexion Google (redirection OAuth)
+ * consommed by 0auth route io e
  */
 export const googleLoginRedirect = () => {
   window.location.href = "http://127.0.0.1:5000/api/oauth/login/google";
