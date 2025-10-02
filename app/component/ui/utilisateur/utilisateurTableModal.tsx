@@ -74,9 +74,9 @@ export default function UtilisateurTableModal() {
           {isAdmin && (
             <button
               onClick={handleAddUser}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+              className="bg-green-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
             >
-              + Ajouter
+              + Ajouter Utilisateur
             </button>
           )}
         </div>

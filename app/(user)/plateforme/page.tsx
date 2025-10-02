@@ -1,9 +1,8 @@
-import PlateformeTableModal from "@/app/component/ui/plateform/plateformeTableModal.";
+import PlateformeConnectPage from "@/app/component/ui/plateforme/utilisateurPlateformTable";
 
-export default function ProjetPage() {
-  return(
-    <div >
-      <PlateformeTableModal />
-    </div>
-  );
+export default function PlateformPage()
+{
+  return (
+    <PlateformeConnectPage/>
+  )
 }

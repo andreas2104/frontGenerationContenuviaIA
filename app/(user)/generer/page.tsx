@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { useCatalog } from '@/hooks/useFetch';
@@ -98,8 +99,6 @@ export default function GenererContenuPage() {
                 ))}
               </select>
             </div>
-
-            {/* Sélection du prompt */}
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Prompt <span className="text-red-500">*</span>
@@ -152,8 +151,6 @@ export default function GenererContenuPage() {
                 ))}
               </select>
             </div>
-
-            {/* Titre (optionnel) */}
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Titre (optionnel)
@@ -165,8 +162,6 @@ export default function GenererContenuPage() {
                 onChange={(e) => onChange('titre', e.target.value)}
               />
             </div>
-
-            {/* Bouton de génération */}
             <button
               className="w-full rounded-md bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 font-medium transition-colors"
               disabled={!canSubmit || isGenerating}
@@ -181,7 +176,7 @@ export default function GenererContenuPage() {
                   Génération en cours...
                 </span>
               ) : (
-                '🚀 Générer le contenu'
+                ' Générer le contenu'
               )}
             </button>
 
@@ -267,7 +262,6 @@ export default function GenererContenuPage() {
                     className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                     onClick={() => {
                       navigator.clipboard.writeText(result.contenu);
-                      // TODO: Ajouter une notification de succès
                     }}
                   >
                     📋 Copier
