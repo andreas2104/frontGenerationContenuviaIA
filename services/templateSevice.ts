@@ -7,6 +7,11 @@ export const fetchAllTemplates = async (): Promise<Template[]> => {
   return apiClient<Template[]>('/templates', {method: 'GET' });
 };
 
+export const fetchTempleteById = async (templateId: number): Promise<Template> => {
+return apiClient<Template>(`/templates/${templateId}`, {
+  method: 'GET'
+});
+}
 
 export const addTemplate = async (template: Omit<Template, 'id'>): Promise<{ message: string; template_id: number }> => {
   console.log(' Création d\'un template...');

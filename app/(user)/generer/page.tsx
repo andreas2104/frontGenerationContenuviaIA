@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import { useCatalog } from '@/hooks/useFetch';
@@ -6,6 +5,13 @@ import { useGenerateContenu } from '@/hooks/useContenu';
 import { useCurrentUtilisateur } from '@/hooks/useUtilisateurs';
 import { ContenuPayload } from '@/types/contenu';
 import { TailSpin } from 'react-loader-spinner';
+
+// Nouveau type pour les images uploadées
+interface ImageFile {
+  file: File;
+  preview: string;
+}
+
 export default function GenererContenuPage() {
   const { prompts, templates, models, isPending, isError } = useCatalog();
   const { mutate: generate, data: result, isPending: isGenerating, error } = useGenerateContenu();
@@ -18,6 +24,78 @@ export default function GenererContenuPage() {
     titre: '',
   });
 
+  // ✅ NOUVEAU : État pour les images uploadées
+  const [images, setImages] = useState<ImageFile[]>([]);
+  const [selectedModel, setSelectedModel] = useState<any>(null);
+
+  // ✅ NOUVEAU : Détecter si le modèle sélectionné est multimodal
+  useEffect(() => {
+    if (payload.id_model && models.data) {
+      const model = models.data.find(m => m.id === payload.id_model);
+      setSelectedModel(model);
+    } else {
+      setSelectedModel(null);
+    }
+  }, [payload.id_model, models.data]);
+
+  // ✅ NOUVEAU : Gestion de l'upload d'images
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const newImages: ImageFile[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.type.startsWith('image/')) {
+        newImages.push({
+          file,
+          preview: URL.createObjectURL(file)
+        });
+      }
+    }
+
+    setImages(prev => [...prev, ...newImages]);
+  };
+
+  // ✅ NOUVEAU : Supprimer une image
+  const removeImage = (index: number) => {
+    setImages(prev => {
+      const newImages = [...prev];
+      URL.revokeObjectURL(newImages[index].preview);
+      newImages.splice(index, 1);
+      return newImages;
+    });
+  };
+
+  // ✅ NOUVEAU : Convertir images en base64 pour l'API
+  const convertImagesToBase64 = async (): Promise<any[]> => {
+    const base64Images = [];
+    
+    for (const img of images) {
+      try {
+        const base64 = await fileToBase64(img.file);
+        base64Images.push({
+          base64: base64.split(',')[1], // Retirer le prefix data:image/...
+          mime_type: img.file.type
+        });
+      } catch (error) {
+        console.error('Erreur conversion image:', error);
+      }
+    }
+    
+    return base64Images;
+  };
+
+  // ✅ NOUVEAU : Helper pour conversion fichier -> base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
 
   if (isPending || isUserLoading) {
     return (
@@ -52,12 +130,21 @@ export default function GenererContenuPage() {
 
   const canSubmit = payload.id_prompt && payload.id_model;
 
-  const handleGenerate = () => {
+  // ✅ MODIFIÉ : Gestion de la génération avec images
+  const handleGenerate = async () => {
+    let imagesPayload: any[] = [];
+
+    // Convertir les images si présentes et modèle multimodal
+    if (images.length > 0 && selectedModel?.type_model === 'multimodal') {
+      imagesPayload = await convertImagesToBase64();
+    }
+
     const cleanPayload: ContenuPayload = {
       id_prompt: Number(payload.id_prompt),
       id_model: Number(payload.id_model),
       ...(payload.id_template && { id_template: Number(payload.id_template) }),
       ...(payload.titre && { titre: payload.titre }),
+      ...(imagesPayload.length > 0 && { images: imagesPayload }) // ✅ Ajout des images
     };
 
     generate(cleanPayload);
@@ -94,11 +181,82 @@ export default function GenererContenuPage() {
                 <option value="" disabled className="text-gray-500">Choisir un modèle</option>
                 {models.data?.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.nom_model} ({m.fournisseur})
+                    {m.nom_model} ({m.fournisseur}) - {m.type_model}
                   </option>
                 ))}
               </select>
+              {selectedModel && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Type: <span className="font-medium">{selectedModel.type_model}</span>
+                  {selectedModel.type_model === 'multimodal' && (
+                    <span className="ml-2 text-blue-600">✓ Supporte les images</span>
+                  )}
+                </p>
+              )}
             </div>
+
+            {/* ✅ NOUVEAU : Section upload d'images pour modèles multimodaux */}
+            {selectedModel?.type_model === 'multimodal' && (
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  Images à analyser (optionnel)
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-md p-4">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer block text-center"
+                  >
+                    <div className="flex flex-col items-center justify-center space-y-2">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm text-gray-600">
+                        Cliquez pour ajouter des images
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        PNG, JPG, JPEG jusqu'à 5MB
+                      </span>
+                    </div>
+                  </label>
+                  
+                  {/* Aperçu des images */}
+                  {images.length > 0 && (
+                    <div className="mt-4 grid grid-cols-3 gap-2">
+                      {images.map((img, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={img.preview}
+                            alt={`Preview ${index}`}
+                            className="w-full h-20 object-cover rounded border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {images.length > 0 && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {images.length} image(s) sélectionnée(s)
+                  </p>
+                )}
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Prompt <span className="text-red-500">*</span>
@@ -132,6 +290,7 @@ export default function GenererContenuPage() {
                 </p>
               )}
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Template (optionnel)
@@ -151,6 +310,7 @@ export default function GenererContenuPage() {
                 ))}
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Titre (optionnel)
@@ -162,6 +322,7 @@ export default function GenererContenuPage() {
                 onChange={(e) => onChange('titre', e.target.value)}
               />
             </div>
+
             <button
               className="w-full rounded-md bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 font-medium transition-colors"
               disabled={!canSubmit || isGenerating}
@@ -176,7 +337,7 @@ export default function GenererContenuPage() {
                   Génération en cours...
                 </span>
               ) : (
-                ' Générer le contenu'
+                `Générer le contenu ${images.length > 0 ? 'avec images' : ''}`
               )}
             </button>
 
@@ -190,7 +351,7 @@ export default function GenererContenuPage() {
           </div>
         </section>
 
-        {/* Section Résultat */}
+        {/* Section Résultat - MODIFIÉ pour afficher le contenu multimodal */}
         <section className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-6 text-gray-800">Résultat</h2>
           
@@ -212,8 +373,15 @@ export default function GenererContenuPage() {
               <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      result.type === 'multimodal' 
+                        ? 'bg-purple-100 text-purple-800'
+                        : result.type === 'image'
+                        ? 'bg-orange-100 text-orange-800'
+                        : 'bg-green-100 text-green-800'
+                    }`}>
                       ✅ {result.type}
+                      {result.type === 'multimodal' && ' 📷'}
                     </span>
                     <span className="text-sm text-gray-600">
                       Généré avec succès
@@ -229,7 +397,7 @@ export default function GenererContenuPage() {
                 </div>
               </div>
 
-              {/* Contenu généré */}
+              {/* Contenu généré - MODIFIÉ pour multimodal */}
               <div className="p-4">
                 {result.type === 'image' ? (
                   <div className="space-y-3">
@@ -242,8 +410,23 @@ export default function GenererContenuPage() {
                       <strong>URL:</strong> {result.contenu}
                     </p>
                   </div>
+                ) : result.type === 'multimodal' ? (
+                  // ✅ NOUVEAU : Affichage pour contenu multimodal
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 p-3 rounded border">
+                      <h3 className="font-medium text-gray-700 mb-2">Analyse multimodale :</h3>
+                      <pre className="whitespace-pre-wrap text-sm leading-relaxed bg-white p-3 rounded overflow-auto max-h-96 text-gray-800">
+                        {result.contenu}
+                      </pre>
+                    </div>
+                    {result.structure && (
+                      <div className="text-sm text-gray-600">
+                        <strong>Structure:</strong> {JSON.stringify(result.structure, null, 2)}
+                      </div>
+                    )}
+                  </div>
                 ) : (
-                  // Ajout de classes de couleur pour le texte
+                  // Affichage texte classique
                   <div className="space-y-3">
                     <pre className="whitespace-pre-wrap text-sm leading-relaxed bg-gray-50 p-4 rounded border overflow-auto max-h-96 text-gray-800"> 
                       {result.contenu}

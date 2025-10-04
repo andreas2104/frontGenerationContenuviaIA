@@ -3,8 +3,17 @@ import { apiClient } from "./clientService";
 
 export const fetchProjets = async (): Promise<Projet[]> => {
   console.log("Récupération des projets...");
-  return apiClient<Projet[]>("/projets", {
+  const data =  apiClient<Projet[]>("/projets", {
     method: "GET",
+  });
+  console.log("all projets:", data);
+  return data
+};
+
+export const fetchProjetById = async (projetId: number): Promise<Projet> => {
+  console.log("Récupération du projet ID:", projetId);
+  return apiClient<Projet>(`/projets/${projetId}`, {
+    method: 'GET'
   });
 };
 

@@ -75,10 +75,10 @@ export default function EditContenuPage() {
           titre: formData.titre,
           texte: formData.texte,
           image_url: formData.image_url,
-          meta: contenu.meta // Conserver les métadonnées existantes
+          meta: contenu.meta 
         }
       });
-      router.push('/historique');
+      router.push('/contenu');
     } catch (err: any) {
       setSaveError(err.message);
     } finally {
