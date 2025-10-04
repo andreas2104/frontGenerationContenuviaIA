@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { addProjet, deleteProjet, fetchProjets, updateProjet } from "@/services/projetService";
+import { addProjet, deleteProjet, fetchProjetById, fetchProjets, updateProjet } from "@/services/projetService";
 import { Projet, ProjetCreate } from "@/types/projet";
 
 export const useProjet  = () => {
@@ -32,7 +32,6 @@ export const useProjet  = () => {
     }
   });
 
-
   return {
     projets,
     isLoading,
@@ -41,4 +40,19 @@ export const useProjet  = () => {
     updateProjet: updateMutation.mutate,
     deleteProjet: deleteMutation.mutate
   }
+}
+
+export const useProjetById = (id: number | null) => {
+  return useQuery<Projet, Error>({
+    queryKey: ["projet", id],
+    queryFn: () => {
+      if (!id) {
+        throw new Error("ID du projet requis");
+      }
+      return fetchProjetById(id);
+    },
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+    retry: 2, 
+  });
 }

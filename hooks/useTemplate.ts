@@ -1,4 +1,4 @@
-import { fetchAllTemplates,addTemplate,updateTemplate,deleteTemplate } from "@/services/templateSevice";
+import { fetchAllTemplates,addTemplate,updateTemplate,deleteTemplate, fetchTempleteById } from "@/services/templateSevice";
 import { Template } from "@/types/template";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -42,3 +42,18 @@ export const useTemplate = () => {
     deleteTemplate: deleteMutation.mutate,
   };
 };
+
+export const useTemplateById = (id: number | null) => {
+  return useQuery<Template, Error>({
+    queryKey: ["templte", id],
+    queryFn: () => {
+      if (!id) {
+        throw new Error("ID du template requis");
+      }
+      return fetchTempleteById(id);
+    },
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+    retry: 2,
+  });
+}
