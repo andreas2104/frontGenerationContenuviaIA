@@ -5,11 +5,14 @@ import { Prompt } from "@/types/prompt";
 import { useState } from "react";
 import PromptInputModal from "./promptInputModal";
 import { useCurrentUtilisateur } from "@/hooks/useUtilisateurs";
+import { useSearch } from "@/app/context/searchContext";
 
 export default function PromptTableModal() {
   const { prompt, isPending, deletePrompt } = usePrompt();
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const { utilisateur, isAdmin, isLoading: isUserLoading } = useCurrentUtilisateur();
+  const { searchQuery } = useSearch();
+
   const [showModal, setShowModal] = useState(false);
   const [promptToDelete, setPromptToDelete] = useState<{id: number, nom: string} | null>(null);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
@@ -30,6 +33,20 @@ export default function PromptTableModal() {
   // Fermer la notification manuellement
   const closeNotification = () => {
     setNotification({ show: false, message: '', type: 'success' });
+  };
+
+  // Fonction de filtrage améliorée
+  const filterPrompts = (prompts: Prompt[], query: string) => {
+    if (!query.trim()) return prompts;
+
+    const lowerQuery = query.toLowerCase();
+    return prompts.filter(prompt =>
+      prompt.nom_prompt?.toLowerCase().includes(lowerQuery) ||
+      prompt.texte_prompt?.toLowerCase().includes(lowerQuery) ||
+      (prompt.public ? 'public' : 'privé').includes(lowerQuery) ||
+      prompt.date_creation?.toLowerCase().includes(lowerQuery) ||
+      prompt.date_modification?.toLowerCase().includes(lowerQuery)
+    );
   };
 
   if (isPending || isUserLoading) {
@@ -55,6 +72,13 @@ export default function PromptTableModal() {
       </div>
     );
   }
+
+  // Filtrer les prompts selon les droits
+  const filteredByRights = isAdmin 
+    ? prompt 
+    : prompt.filter(p => Number(p.id_utilisateur) === Number(utilisateur.id));
+
+  const filteredPrompts = filterPrompts(filteredByRights, searchQuery);
 
   const handleAdd = () => {
     setSelectedPrompt(null);
@@ -115,9 +139,26 @@ export default function PromptTableModal() {
     return isAdmin || isOwner;
   };
 
-  const publicPrompts = prompt.filter(p => p.public).length;
-  const privatePrompts = prompt.filter(p => !p.public).length;
-  const totalUtilisations = prompt.reduce((sum, p) => sum + p.utilisation_count, 0);
+  // Composant pour mettre en évidence le texte de recherche
+  const HighlightText = ({ text, searchQuery }: { text: string; searchQuery: string }) => {
+    if (!searchQuery.trim() || !text) return <>{text}</>;
+    
+    const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
+    
+    return (
+      <>
+        {parts.map((part, index) =>
+          part.toLowerCase() === searchQuery.toLowerCase() ? (
+            <mark key={index} className="bg-yellow-200 px-1 rounded">
+              {part}
+            </mark>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  };
 
   return (
     <div className="p-4 bg-white min-h-screen">
@@ -206,7 +247,7 @@ export default function PromptTableModal() {
       )}
 
       <div className="container mx-auto">
-        {/* Header */}
+        {/* Header avec indicateur de recherche */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -220,6 +261,19 @@ export default function PromptTableModal() {
                 </span>
               )}
             </p>
+            
+            {/* Indicateur de recherche active */}
+            {searchQuery && (
+              <div className="mt-2 flex items-center text-sm text-blue-600">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span>
+                  Recherche: "<strong>{searchQuery}</strong>"
+                  ({filteredPrompts.length} résultat{filteredPrompts.length !== 1 ? 's' : ''})
+                </span>
+              </div>
+            )}
           </div>
           <button
             onClick={handleAdd}
@@ -232,48 +286,38 @@ export default function PromptTableModal() {
           </button>
         </div>
 
-        {/* Statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <div className="text-2xl font-bold text-gray-900">{prompt.length}</div>
-            <div className="text-gray-600">Total prompts</div>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <div className="text-2xl font-bold text-green-600">{publicPrompts}</div>
-            <div className="text-gray-600">Prompts publics</div>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <div className="text-2xl font-bold text-blue-600">{privatePrompts}</div>
-            <div className="text-gray-600">Prompts privés</div>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <div className="text-2xl font-bold text-purple-600">{totalUtilisations}</div>
-            <div className="text-gray-600">Utilisations totales</div>
-          </div>
-        </div>
-
-        {prompt.length === 0 ? (
+        {/* Liste des prompts avec recherche */}
+        {filteredPrompts.length === 0 ? (
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
-            <div className="text-gray-400 text-6xl mb-4">💬</div>
+            <div className="text-gray-400 text-6xl mb-4">
+              {searchQuery ? "🔍" : "💬"}
+            </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {isAdmin ? "Aucun prompt dans le système" : "Aucun prompt trouvé"}
+              {searchQuery 
+                ? "Aucun prompt trouvé" 
+                : isAdmin ? "Aucun prompt dans le système" : "Aucun prompt trouvé"
+              }
             </h3>
             <p className="text-gray-600 mb-6">
-              {isAdmin 
-                ? "Les prompts créés par les utilisateurs apparaîtront ici."
-                : "Commencez par créer votre premier prompt !"
+              {searchQuery 
+                ? `Aucun prompt ne correspond à "${searchQuery}". Essayez d'autres termes.`
+                : isAdmin 
+                  ? "Les prompts créés par les utilisateurs apparaîtront ici."
+                  : "Commencez par créer votre premier prompt !"
               }
             </p>
-            <button
-              onClick={handleAdd}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              Créer votre premier prompt
-            </button>
+            {!searchQuery && (
+              <button
+                onClick={handleAdd}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                Créer votre premier prompt
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {prompt.map((p) => {
+            {filteredPrompts.map((p) => {
               const canModify = canModifyPrompt(p);
               const isThisDeleting = isDeleting === p.id;
 
@@ -287,7 +331,12 @@ export default function PromptTableModal() {
                   <div>
                     <div className="flex justify-between items-start mb-3">
                       <h2 className="text-xl font-semibold text-gray-900 line-clamp-2">
-                        {p.nom_prompt || "Sans titre"}
+                        {/* Mise en évidence du nom du prompt */}
+                        {searchQuery && p.nom_prompt ? (
+                          <HighlightText text={p.nom_prompt} searchQuery={searchQuery} />
+                        ) : (
+                          p.nom_prompt || "Sans titre"
+                        )}
                       </h2>
                       {isAdmin && Number(p.id_utilisateur) !== Number(utilisateur.id) && (
                         <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
@@ -297,13 +346,18 @@ export default function PromptTableModal() {
                     </div>
 
                     <p className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed">
-                      {p.texte_prompt}
+                      {/* Mise en évidence du texte du prompt */}
+                      {searchQuery && p.texte_prompt ? (
+                        <HighlightText text={p.texte_prompt} searchQuery={searchQuery} />
+                      ) : (
+                        p.texte_prompt || "Aucune description"
+                      )}
                     </p>
 
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Utilisations:</span>
-                        <span className="font-medium text-gray-700">{p.utilisation_count}</span>
+                        <span className="font-medium text-gray-700">{p.utilisation_count || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Créé le:</span>

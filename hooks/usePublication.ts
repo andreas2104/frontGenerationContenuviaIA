@@ -8,12 +8,14 @@ import {
   publishNow,
   schedulePublication,
   cancelPublication,
+  fetchPublicationStats,
 } from '@/services/publicationService';
 import {
   Publication,
   PublicationCreate,
   PublicationUpdate,
   StatutPublicationEnum,
+  PublicationStats,
 } from '@/types/publication';
 import React from "react";
 
@@ -76,6 +78,7 @@ export const usePublications = () => {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['publications'] });
         queryClient.invalidateQueries({ queryKey: ['contenus'] });
+        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
       },
     }),
 
@@ -84,6 +87,7 @@ export const usePublications = () => {
         updatePublication(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['publications'] });
+        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
       },
     }),
 
@@ -91,6 +95,7 @@ export const usePublications = () => {
       mutationFn: deletePublication,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['publications'] });
+        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
       },
     }),
 
@@ -98,6 +103,7 @@ export const usePublications = () => {
       mutationFn: publishNow,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['publications'] });
+        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
       },
     }),
 
@@ -106,6 +112,7 @@ export const usePublications = () => {
         schedulePublication(id, date),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['publications'] });
+        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
       },
     }),
 
@@ -280,4 +287,14 @@ export const usePublicationsAttention = () => {
   }), [publications]);
 
   return { publicationsAttention };
+};
+
+
+export const usePublicationStatsAdmin = () => {
+  return useQuery({
+    queryKey: ['publicationStats'],
+    queryFn: fetchPublicationStats,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
+  });
 };

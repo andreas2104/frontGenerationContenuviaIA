@@ -108,9 +108,6 @@ export default function AdminModelIATable() {
     }
   };
 
-  const activeModels = modelIA.filter(m => m.actif).length;
-  const inactiveModels = modelIA.filter(m => !m.actif).length;
-
   return (
     <div className="p-4 bg-white min-h-screen">
       {/* Notification */}
@@ -214,22 +211,7 @@ export default function AdminModelIATable() {
           </button>
         </div>
 
-        {/* Statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <div className="text-2xl font-bold text-gray-900">{modelIA.length}</div>
-            <div className="text-gray-600">Total modèles</div>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <div className="text-2xl font-bold text-green-600">{activeModels}</div>
-            <div className="text-gray-600">Modèles actifs</div>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <div className="text-2xl font-bold text-orange-600">{inactiveModels}</div>
-            <div className="text-gray-600">Modèles inactifs</div>
-          </div>
-        </div>
-
+        {/* Liste des modèles IA (sans statistiques) */}
         {modelIA.length === 0 ? (
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
             <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
