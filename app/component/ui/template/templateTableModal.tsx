@@ -5,11 +5,14 @@ import { Template } from "@/types/template";
 import { useState } from "react";
 import TemplateInputModal from "./templateInputModal";
 import { useCurrentUtilisateur } from "@/hooks/useUtilisateurs";
+import { useSearch } from "@/app/context/searchContext";
 
 export default function TemplateTableModal() {
   const { templates, isPending, deleteTemplate } = useTemplate();
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const { utilisateur, isAdmin, isLoading: isUserLoading } = useCurrentUtilisateur();
+  const { searchQuery } = useSearch();
+
   const [showModal, setShowModal] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<{id: number, nom: string} | null>(null);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
@@ -30,6 +33,23 @@ export default function TemplateTableModal() {
   // Fermer la notification manuellement
   const closeNotification = () => {
     setNotification({ show: false, message: '', type: 'success' });
+  };
+
+  // Fonction de filtrage des templates
+  const filterTemplates = (templates: Template[], query: string) => {
+    if (!query.trim()) return templates;
+
+    const lowerQuery = query.toLowerCase();
+    return templates.filter(template =>
+      template.nom_template?.toLowerCase().includes(lowerQuery) ||
+      (template.public ? 'public' : 'privé').includes(lowerQuery) ||
+      template.date_creation?.toLowerCase().includes(lowerQuery) ||
+      template.date_modification?.toLowerCase().includes(lowerQuery) ||
+      // Recherche dans la structure si c'est une chaîne
+      (typeof template.structure === 'string' && template.structure.toLowerCase().includes(lowerQuery)) ||
+      // Recherche dans la structure si c'est un objet
+      (typeof template.structure === 'object' && JSON.stringify(template.structure).toLowerCase().includes(lowerQuery))
+    );
   };
 
   if (isUserLoading) {
@@ -63,6 +83,13 @@ export default function TemplateTableModal() {
       </div>
     );
   }
+
+  // Filtrer les templates selon les droits ET la recherche
+  const filteredByRights = isAdmin 
+    ? templates 
+    : templates.filter(t => Number(t.id_utilisateur) === Number(utilisateur.id));
+
+  const filteredTemplates = filterTemplates(filteredByRights, searchQuery);
 
   const handleAdd = () => {
     setSelectedTemplate(null);
@@ -123,8 +150,72 @@ export default function TemplateTableModal() {
     return isAdmin || isOwner;
   };
 
-  const publicTemplates = templates.filter(t => t.public).length;
-  const privateTemplates = templates.filter(t => !t.public).length;
+  // Statistiques basées sur les templates filtrés
+  const publicTemplates = filteredTemplates.filter(t => t.public).length;
+  const privateTemplates = filteredTemplates.filter(t => !t.public).length;
+
+  // Composant pour mettre en évidence le texte de recherche
+  const HighlightText = ({ text, searchQuery }: { text: string; searchQuery: string }) => {
+    if (!searchQuery.trim() || !text) return <>{text}</>;
+    
+    const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
+    
+    return (
+      <>
+        {parts.map((part, index) =>
+          part.toLowerCase() === searchQuery.toLowerCase() ? (
+            <mark key={index} className="bg-yellow-200 px-1 rounded">
+              {part}
+            </mark>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  };
+
+  // Fonction pour formater l'affichage de la structure
+  const renderStructure = (structure: any, searchQuery: string) => {
+    if (!structure) return "Aucune structure définie";
+    
+    if (typeof structure === 'string') {
+      return searchQuery ? (
+        <HighlightText text={structure} searchQuery={searchQuery} />
+      ) : (
+        structure
+      );
+    }
+    
+    if (Array.isArray(structure)) {
+      return (
+        <div className="space-y-1">
+          {structure.map((item, idx) => (
+            <div key={idx} className="text-xs bg-gray-50 p-1 rounded">
+              {typeof item === 'object' ? 
+                (searchQuery ? 
+                  <HighlightText text={JSON.stringify(item)} searchQuery={searchQuery} /> 
+                  : JSON.stringify(item)
+                ) 
+                : (searchQuery ? 
+                  <HighlightText text={String(item)} searchQuery={searchQuery} /> 
+                  : String(item)
+                )
+              }
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    // Si c'est un objet
+    const structureString = JSON.stringify(structure, null, 2);
+    return searchQuery ? (
+      <HighlightText text={structureString} searchQuery={searchQuery} />
+    ) : (
+      <pre className="text-xs whitespace-pre-wrap">{structureString}</pre>
+    );
+  };
 
   return (
     <div className="p-4 bg-white min-h-screen">
@@ -213,7 +304,7 @@ export default function TemplateTableModal() {
       )}
 
       <div className="container mx-auto">
-        {/* Header */}
+        {/* Header avec indicateur de recherche */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -227,6 +318,19 @@ export default function TemplateTableModal() {
                 </span>
               )}
             </p>
+            
+            {/* Indicateur de recherche active */}
+            {searchQuery && (
+              <div className="mt-2 flex items-center text-sm text-blue-600">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span>
+                  Recherche: "<strong>{searchQuery}</strong>"
+                  ({filteredTemplates.length} résultat{filteredTemplates.length !== 1 ? 's' : ''})
+                </span>
+              </div>
+            )}
           </div>
           <button 
             onClick={handleAdd}
@@ -239,10 +343,10 @@ export default function TemplateTableModal() {
           </button>
         </div>
 
-        {/* Statistiques */}
+        {/* Statistiques basées sur les templates filtrés */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <div className="text-2xl font-bold text-gray-900">{templates.length}</div>
+            <div className="text-2xl font-bold text-gray-900">{filteredTemplates.length}</div>
             <div className="text-gray-600">Total templates</div>
           </div>
           <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
@@ -255,28 +359,38 @@ export default function TemplateTableModal() {
           </div>
         </div>
 
-        {templates.length === 0 ? (
+        {/* Liste des templates avec recherche */}
+        {filteredTemplates.length === 0 ? (
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
-            <div className="text-gray-400 text-6xl mb-4">📄</div>
+            <div className="text-gray-400 text-6xl mb-4">
+              {searchQuery ? "🔍" : "📄"}
+            </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {isAdmin ? "Aucun template dans le système" : "Aucun template trouvé"}
+              {searchQuery 
+                ? "Aucun template trouvé" 
+                : isAdmin ? "Aucun template dans le système" : "Aucun template trouvé"
+              }
             </h3>
             <p className="text-gray-600 mb-6">
-              {isAdmin 
-                ? "Les templates créés par les utilisateurs apparaîtront ici."
-                : "Commencez par créer votre premier template !"
+              {searchQuery 
+                ? `Aucun template ne correspond à "${searchQuery}". Essayez d'autres termes.`
+                : isAdmin 
+                  ? "Les templates créés par les utilisateurs apparaîtront ici."
+                  : "Commencez par créer votre premier template !"
               }
             </p>
-            <button 
-              onClick={handleAdd}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              Créer votre premier template
-            </button>
+            {!searchQuery && (
+              <button 
+                onClick={handleAdd}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                Créer votre premier template
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map((t) => {
+            {filteredTemplates.map((t) => {
               const canModify = canModifyTemplate(t);
               const isThisDeleting = isDeleting === t.id;
 
@@ -290,7 +404,12 @@ export default function TemplateTableModal() {
                   <div>
                     <div className="flex justify-between items-start mb-3">
                       <h2 className="text-xl font-semibold text-gray-900 line-clamp-2">
-                        {t.nom_template || 'Sans titre'}
+                        {/* Mise en évidence du nom du template */}
+                        {searchQuery && t.nom_template ? (
+                          <HighlightText text={t.nom_template} searchQuery={searchQuery} />
+                        ) : (
+                          t.nom_template || 'Sans titre'
+                        )}
                       </h2>
                       {isAdmin && Number(t.id_utilisateur) !== Number(utilisateur.id) && (
                         <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
@@ -299,16 +418,8 @@ export default function TemplateTableModal() {
                       )}
                     </div>
                     
-                    <div className="text-gray-600 mb-4 line-clamp-4 text-sm leading-relaxed">
-                      {t.structure && typeof t.structure === 'object'
-                        ? Array.isArray(t.structure)
-                          ? t.structure.map((item, idx) => (
-                              <div key={idx} className="mb-1">
-                                {typeof item === 'object' ? JSON.stringify(item) : item}
-                              </div>
-                            ))
-                          : JSON.stringify(t.structure, null, 2)
-                        : t.structure}
+                    <div className="text-gray-600 mb-4 line-clamp-4 text-sm leading-relaxed max-h-32 overflow-y-auto">
+                      {renderStructure(t.structure, searchQuery)}
                     </div>
                   </div>
                   

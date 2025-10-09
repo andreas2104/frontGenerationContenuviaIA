@@ -95,8 +95,6 @@ export const usePlateformeById = (id: number | null) => {
 };
 
 
-
-
 export const usePlateformesDisponibles = () => {
   return useQuery<PlateformeConfig[], Error>({
     queryKey: ["plateformes-disponibles"],

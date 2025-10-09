@@ -53,3 +53,25 @@ export interface PublicationListResponse {
   page?: number;
   limit?: number;
 }
+
+export interface PublicationStats {
+  total: number;
+  par_statut: Record<StatutPublicationEnum, number>;
+  cette_semaine: number;
+  a_venir: number;
+  dernieres_publications: PublicationResume[];
+  plateforme_populaire: number | null;
+}
+
+export interface PublicationResume {
+  id: number;
+  titre: string;
+  statut: StatutPublicationEnum;
+  date_creation: string;
+}
+
+export interface StatsResponse {
+  message?: string;
+  stats?: PublicationStats;
+  error?: string;
+}

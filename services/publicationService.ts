@@ -1,4 +1,4 @@
-import { Publication, PublicationCreate, PublicationResponse, PublicationUpdate } from "@/types/publication";
+import { Publication, PublicationCreate, PublicationResponse, PublicationStats, PublicationUpdate, StatsResponse } from "@/types/publication";
 import { apiClient } from "./clientService";
 
 
@@ -76,4 +76,25 @@ export const cancelPublication = async (publicationId: number): Promise<{ messag
   return apiClient<{ message: string }>(`/publications/${publicationId}/cancel`, {
     method: 'POST',
   });
+};
+
+
+export const fetchPublicationStats = async (): Promise<PublicationStats> => {
+  console.log('Récupération des statistiques des publications');
+  return apiClient<PublicationStats>('/publications/stats', {
+    method: 'GET',
+  });
+};
+
+export const getPublicationStats = async (): Promise<StatsResponse> => {
+  try {
+    console.log('Récupération des statistiques des publications');
+    const stats = await apiClient<PublicationStats>('/publications/stats', {
+      method: 'GET',
+    });
+    return { stats };
+  } catch (error) {
+    console.error('Erreur lors de la récupération des statistiques:', error);
+    return { error: 'Erreur lors de la récupération des statistiques' };
+  }
 };
