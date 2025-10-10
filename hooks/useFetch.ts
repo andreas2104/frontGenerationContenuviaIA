@@ -44,6 +44,11 @@ export const useCatalog = () => {
     queryFn: () => api.get('/prompts').then(res => res.data),
   });
 
+  const projets = useQuery({
+    queryKey: ['projets'],
+    queryFn: () => api.get('/projets').then(res => res.data),
+  });
+
   const templates = useQuery({
     queryKey: ['templates'],
     queryFn: () => api.get('/templates').then(res => res.data),
@@ -55,6 +60,7 @@ export const useCatalog = () => {
   });
 
   return {
+    projets,
     prompts,
     templates,
     models,

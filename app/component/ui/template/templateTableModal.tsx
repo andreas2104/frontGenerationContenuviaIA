@@ -87,7 +87,12 @@ export default function TemplateTableModal() {
   // Filtrer les templates selon les droits ET la recherche
   const filteredByRights = isAdmin 
     ? templates 
-    : templates.filter(t => Number(t.id_utilisateur) === Number(utilisateur.id));
+    : templates.filter(t => {
+      const isOwner = Number(t.id_utilisateur) === Number(utilisateur.id);
+      const isPublicTemplate = t.public === true;
+      return isOwner || isPublicTemplate;
+      // Number(t.id_utilisateur) === Number(utilisateur.id)
+    });
 
   const filteredTemplates = filterTemplates(filteredByRights, searchQuery);
 
@@ -401,21 +406,28 @@ export default function TemplateTableModal() {
                     isThisDeleting ? 'opacity-50' : ''
                   }`}
                 >
-                  <div>
+                  <div>              
                     <div className="flex justify-between items-start mb-3">
                       <h2 className="text-xl font-semibold text-gray-900 line-clamp-2">
-                        {/* Mise en évidence du nom du template */}
                         {searchQuery && t.nom_template ? (
                           <HighlightText text={t.nom_template} searchQuery={searchQuery} />
                         ) : (
                           t.nom_template || 'Sans titre'
                         )}
                       </h2>
-                      {isAdmin && Number(t.id_utilisateur) !== Number(utilisateur.id) && (
-                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
-                          Autre utilisateur
-                        </span>
-                      )}
+                      {/* Badges pour identifier le propriétaire */}
+                      <div className="flex gap-1">
+                        {isAdmin && Number(t.id_utilisateur) !== Number(utilisateur.id) && (
+                          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
+                            Autre utilisateur
+                          </span>
+                        )}
+                        {!isAdmin && Number(t.id_utilisateur) !== Number(utilisateur.id) && t.public && (
+                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full font-medium">
+                            Template partagé
+                          </span>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="text-gray-600 mb-4 line-clamp-4 text-sm leading-relaxed max-h-32 overflow-y-auto">

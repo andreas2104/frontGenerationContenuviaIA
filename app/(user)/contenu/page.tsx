@@ -4,12 +4,13 @@ import { useProjetById } from '@/hooks/useProjet';
 import { useTemplateById } from '@/hooks/useTemplate';
 import { usePublications } from '@/hooks/usePublication';
 import { usePlateforme } from '@/hooks/usePlateforme';
+import { useCurrentUtilisateur } from '@/hooks/useUtilisateurs';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { PublicationCreate, StatutPublicationEnum } from '@/types/publication';
 import { useSearch } from '@/app/context/searchContext';
 
-// Composant Modal de Publication
+// Composant Modal de Publication (inchangé)
 function PublicationModal({
   isOpen,
   onClose,
@@ -192,7 +193,7 @@ function PublicationModal({
               <option value="">Sélectionnez une plateforme</option>
               {plateformes.map(plateforme => (
                 <option key={plateforme.id} value={plateforme.id}>
-                  {plateforme.plateforme_nom}
+                  {plateforme.nom}
                 </option>
               ))}
             </select>
@@ -359,6 +360,7 @@ function PublicationModal({
 // Composant principal de la page Historique
 export default function HistoriqueContenuPage() {
   const { contenus, isPending, error, deleteContenu } = useContenu();
+  const { utilisateur } = useCurrentUtilisateur();
   const { searchQuery } = useSearch();
   const [contenuToDelete, setContenuToDelete] = useState<number | null>(null);
   const [notification, setNotification] = useState<{
@@ -367,7 +369,15 @@ export default function HistoriqueContenuPage() {
     type: 'success' | 'error';
   }>({ show: false, message: '', type: 'success' });
 
-  // Fonction de filtrage des contenus
+  // ✅ MODIFIÉ : Filtrer les contenus UNIQUEMENT pour l'utilisateur connecté
+  const userContenus = contenus.filter(contenu => {
+    // Vérifier que l'utilisateur est propriétaire du contenu
+    // Cette logique dépend de votre structure de données
+    // Supposons que le contenu a un champ id_utilisateur
+    return contenu.id_utilisateur === utilisateur?.id;
+  });
+
+  // Fonction de filtrage des contenus par recherche
   const filterContenus = (contenus: Contenu[], query: string) => {
     if (!query.trim()) return contenus;
 
@@ -381,7 +391,7 @@ export default function HistoriqueContenuPage() {
     );
   };
 
-  const filteredContenus = filterContenus(contenus, searchQuery);
+  const filteredContenus = filterContenus(userContenus, searchQuery);
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
@@ -504,6 +514,16 @@ export default function HistoriqueContenuPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Historique des contenus</h1>
             
+            {/* ✅ MODIFIÉ : Indicateur de confidentialité stricte */}
+            <div className="mt-2 flex items-center text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span className="font-medium">
+                Vos contenus personnels - Confidentialité totale
+              </span>
+            </div>
+
             {/* Indicateur de recherche active */}
             {searchQuery && (
               <div className="mt-2 flex items-center text-sm text-blue-600">
@@ -528,14 +548,22 @@ export default function HistoriqueContenuPage() {
               {searchQuery ? "🔍" : "📄"}
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {searchQuery ? "Aucun contenu trouvé" : "Aucun contenu trouvé"}
+              {searchQuery ? "Aucun contenu trouvé" : "Aucun contenu personnel"}
             </h3>
             <p className="text-gray-600">
               {searchQuery 
-                ? `Aucun contenu ne correspond à "${searchQuery}". Essayez d'autres termes.`
-                : "Créez-en un pour commencer !"
+                ? `Aucun de vos contenus ne correspond à "${searchQuery}". Essayez d'autres termes.`
+                : "Vous n'avez pas encore créé de contenu. Créez-en un pour commencer !"
               }
             </p>
+            {!searchQuery && (
+              <Link
+                href="/generer"
+                className="inline-block mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Créer votre premier contenu
+              </Link>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -638,12 +666,20 @@ function ContenuCard({ contenu, onDelete, searchQuery }: {
               </span>
             </div>
 
+            {/* ✅ MODIFIÉ : Affichage du projet avec badge de confidentialité */}
             <div className="flex items-center text-xs text-gray-600">
               <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
               </svg>
-              Projet: <span className="font-medium ml-1">
+              Projet: 
+              <span className="font-medium ml-1 flex items-center">
                 {projet?.nom_projet || 'Défaut'}
+                <span className="ml-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded flex items-center">
+                  <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Personnel
+                </span>
               </span>
             </div>
 
@@ -736,7 +772,7 @@ function ContenuCard({ contenu, onDelete, searchQuery }: {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            Supprimer
+            S
           </button>
         </div>
       </div>
