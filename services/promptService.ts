@@ -3,9 +3,10 @@ import { apiClient } from "./clientService";
 
 export const fetchPrompt = async (): Promise<Prompt[]> => {
   console.log('Récupération des prompts...');
-  return apiClient<Prompt[]>('/prompts', {
+  const prompts =  apiClient<Prompt[]>('/prompts', {
     method: 'GET',
   });
+return (await prompts).sort((a, b) => b.id - a.id);
 };
 
 export const addPrompt = async (prompt: Prompt): Promise<{ message: string; prompt_id: number }> => {

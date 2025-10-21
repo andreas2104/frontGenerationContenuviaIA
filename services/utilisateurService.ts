@@ -1,3 +1,5 @@
+'use client';
+
 import { Utilisateur } from "@/types/utilisateur";
 import { apiClient } from "./clientService";
 
@@ -7,17 +9,18 @@ export const fetchCurrentUtilisateur = async (): Promise<Utilisateur> => {
     method: 'GET',
   });
   console.log(data);
-  return data;
+   return data;
+
 };
 
 
 export const fetchUtilisateurs = async (): Promise<Utilisateur[]> => {
   console.log('Récupération de tous les utilisateurs...');
-  const data =  apiClient<Utilisateur[]>('/utilisateurs', {
+  const data =  await apiClient<Utilisateur[]>('/utilisateurs', {
     method: 'GET',
   });
   console.log("all data",data);
-  return data;
+  return data.sort((a, b) => b.id - a.id);
 };
 
 

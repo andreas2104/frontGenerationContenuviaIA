@@ -10,7 +10,6 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (data: LoginData) => login(data),
     onSuccess: (data: AuthResponse) => {
-      // ✅ correction : on stocke access_token et pas data.token
       localStorage.setItem('access_token', data.access_token);
       if (data.utilisateur) {
         localStorage.setItem('user', JSON.stringify(data.utilisateur));

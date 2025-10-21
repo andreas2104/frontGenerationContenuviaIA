@@ -1,12 +1,11 @@
 "use client";
 
 import { useLogin } from "@/hooks/useAuth";
-import { googleLoginRedirect } from "@/services/authService";
+import { googleLoginRedirect, xLoginRedirect } from "@/services/authService";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,14 +13,36 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const [xError, setXError] = useState<string | null>(null);
 
   const { mutate: loginUser, isPending, isError, error } = useLogin();
 
-  // Vérifier s'il y a une erreur Google dans l'URL
+  // Vérifier s'il y a des erreurs d'authentification dans l'URL
   useEffect(() => {
     const errorParam = searchParams.get('error');
-    if (errorParam === 'google_auth_failed') {
-      setGoogleError('Échec de la connexion Google. Veuillez réessayer.');
+    const authProvider = searchParams.get('provider');
+
+    if (errorParam) {
+      const errorMessages: { [key: string]: string } = {
+        'google_auth_failed': 'Échec de la connexion Google. Veuillez réessayer.',
+        'x_auth_failed': 'Échec de la connexion X. Veuillez réessayer.',
+        'no_token_received': 'Aucun token reçu. Veuillez réessayer.',
+        'invalid_token_format': 'Token invalide. Veuillez réessayer.',
+        'token_expired': 'Session expirée. Veuillez vous reconnecter.',
+        'token_decode_failed': 'Erreur technique. Veuillez réessayer.',
+      };
+
+      const message = errorMessages[errorParam] || `Erreur d'authentification: ${errorParam}`;
+
+      if (authProvider === 'google' || errorParam.includes('google')) {
+        setGoogleError(message);
+      } else if (authProvider === 'x' || errorParam.includes('x') || errorParam.includes('twitter')) {
+        setXError(message);
+      } else {
+        // Erreur générale
+        setGoogleError(message);
+        setXError(message);
+      }
     }
   }, [searchParams]);
 
@@ -31,7 +52,7 @@ export default function LoginPage() {
       { email, mot_de_passe: password },
       {
         onSuccess: (data) => {
-          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('access_token', data.access_token);
           router.push("/dashboard");
         },
       }
@@ -42,6 +63,11 @@ export default function LoginPage() {
     setGoogleError(null); 
     googleLoginRedirect();
   };
+
+  const handleXLogin = () => {
+    setXError(null);
+    xLoginRedirect();
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
@@ -57,6 +83,13 @@ export default function LoginPage() {
         {googleError && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
             <p className="text-red-600 text-sm">{googleError}</p>
+          </div>
+        )}
+
+        {/* Afficher les erreurs X */}
+        {xError && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <p className="text-red-600 text-sm">{xError}</p>
           </div>
         )}
 
@@ -147,34 +180,54 @@ export default function LoginPage() {
           <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
         </div>
 
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center py-2 px-4 border border-transparent 
-          rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 
-          bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
-          focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
-          transition-colors duration-200"
-        >
-          <Image
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google logo"
-            width={54}
-            height={52}
-            className="h-5 w-5 mr-2"
-          />
-          Se connecter avec Google
-        </button>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <button
+            onClick={handleGoogleLogin}
+            className="flex items-center justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 
+            rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 
+            bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
+            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 
+            transition-colors duration-200"
+          >
+            <Image
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google logo"
+              width={20}
+              height={20}
+              className="h-5 w-5 mr-2"
+            />
+            Google
+          </button>
+          
+          <button
+            onClick={handleXLogin} 
+            className="flex items-center justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 
+            rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 
+            bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
+            focus:outline-none focus:ring-2 focus:ring-blue-500 
+            transition-colors duration-200"
+          >
+            <Image
+              src="https://upload.wikimedia.org/wikipedia/commons/8/85/X_logo_2023_%28black%29.svg"  // URL externe officielle
+              alt="X (Twitter) logo"
+              width={20}
+              height={20}
+              className="h-5 w-5 mr-2"
+            />
+            X
+          </button>
+        </div>
 
         <div className="text-sm flex justify-between">
           <Link
-            href="/"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
+            href="/forgot-password"
+            className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
           >
             Mot de passe oublié ?
           </Link>
           <Link
             href="/registration"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
+            className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
           >
             Nouveau compte ?
           </Link>

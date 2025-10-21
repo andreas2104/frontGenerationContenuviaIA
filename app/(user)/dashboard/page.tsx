@@ -454,7 +454,7 @@ export default function DashboardPage() {
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Actions rapides</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <button 
-            onClick={() => window.location.href = '/projets'}
+            onClick={() => window.location.href = '/projet'}
             className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all text-left group hover:border-blue-300"
           >
             <div className="flex items-center justify-between mb-3">
@@ -467,7 +467,7 @@ export default function DashboardPage() {
           </button>
 
           <button 
-            onClick={() => window.location.href = '/contenus'}
+            onClick={() => window.location.href = '/contenu'}
             className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all text-left group hover:border-teal-300"
           >
             <div className="flex items-center justify-between mb-3">

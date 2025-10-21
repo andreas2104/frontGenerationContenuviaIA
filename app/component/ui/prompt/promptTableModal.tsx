@@ -6,6 +6,7 @@ import { useState } from "react";
 import PromptInputModal from "./promptInputModal";
 import { useCurrentUtilisateur } from "@/hooks/useUtilisateurs";
 import { useSearch } from "@/app/context/searchContext";
+import { Users } from "lucide-react";
 
 export default function PromptTableModal() {
   const { prompt, isPending, deletePrompt } = usePrompt();
@@ -22,7 +23,6 @@ export default function PromptTableModal() {
     type: 'success' | 'error';
   }>({ show: false, message: '', type: 'success' });
 
-  // Afficher une notification temporaire
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -30,12 +30,10 @@ export default function PromptTableModal() {
     }, 3000);
   };
 
-  // Fermer la notification manuellement
   const closeNotification = () => {
     setNotification({ show: false, message: '', type: 'success' });
   };
 
-  // Fonction de filtrage améliorée
   const filterPrompts = (prompts: Prompt[], query: string) => {
     if (!query.trim()) return prompts;
 
@@ -73,7 +71,6 @@ export default function PromptTableModal() {
     );
   }
 
-  // Filtrer les prompts selon les droits
   const filteredByRights = isAdmin 
     ? prompt 
     : prompt.filter(p => Number(p.id_utilisateur) === Number(utilisateur.id));
@@ -139,7 +136,6 @@ export default function PromptTableModal() {
     return isAdmin || isOwner;
   };
 
-  // Composant pour mettre en évidence le texte de recherche
   const HighlightText = ({ text, searchQuery }: { text: string; searchQuery: string }) => {
     if (!searchQuery.trim() || !text) return <>{text}</>;
     
@@ -162,7 +158,6 @@ export default function PromptTableModal() {
 
   return (
     <div className="p-4 bg-white min-h-screen">
-      {/* Notification */}
       {notification.show && (
         <div className={`fixed top-4 right-4 z-50 max-w-sm ${
           notification.type === 'success' 
@@ -194,7 +189,6 @@ export default function PromptTableModal() {
         </div>
       )}
 
-      {/* Modal de confirmation de suppression */}
       {promptToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-scale-in">
@@ -247,20 +241,19 @@ export default function PromptTableModal() {
       )}
 
       <div className="container mx-auto">
-        {/* Header avec indicateur de recherche */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
               {isAdmin ? 'Gestion des Prompts (Admin)' : 'Mes Prompts'}
             </h1>
-            <p className="text-gray-600 mt-2">
+            {/* <p className="text-gray-600 mt-2">
               Connecté en tant que: <span className="font-semibold text-gray-800">{utilisateur.prenom} {utilisateur.nom}</span>
               {isAdmin && (
                 <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
                   Admin
                 </span>
               )}
-            </p>
+            </p> */}
             
             {/* Indicateur de recherche active */}
             {searchQuery && (
@@ -269,7 +262,7 @@ export default function PromptTableModal() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <span>
-                  Recherche: "<strong>{searchQuery}</strong>"
+                  Recherche: `<strong>{searchQuery}</strong>``
                   ({filteredPrompts.length} résultat{filteredPrompts.length !== 1 ? 's' : ''})
                 </span>
               </div>
@@ -286,7 +279,6 @@ export default function PromptTableModal() {
           </button>
         </div>
 
-        {/* Liste des prompts avec recherche */}
         {filteredPrompts.length === 0 ? (
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
             <div className="text-gray-400 text-6xl mb-4">
@@ -339,8 +331,8 @@ export default function PromptTableModal() {
                         )}
                       </h2>
                       {isAdmin && Number(p.id_utilisateur) !== Number(utilisateur.id) && (
-                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
-                          Autre utilisateur
+                        <span className="text-xs  text-green-800 px-2 py-1 rounded-full font-medium">
+                          <Users/>
                         </span>
                       )}
                     </div>

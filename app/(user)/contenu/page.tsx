@@ -130,7 +130,7 @@ function PublicationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* En-tête */}
         <div className="flex items-center justify-between p-6 border-b">
@@ -187,7 +187,7 @@ function PublicationModal({
               value={formData.id_plateforme}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-700"
               disabled={isLoadingPlateformes || etatsChargement.isCreating}
             >
               <option value="">Sélectionnez une plateforme</option>
@@ -214,7 +214,7 @@ function PublicationModal({
               onChange={handleChange}
               required
               placeholder="Donnez un titre à votre publication..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-700"
               disabled={etatsChargement.isCreating}
             />
           </div>
@@ -231,7 +231,7 @@ function PublicationModal({
               required
               rows={4}
               placeholder="Rédigez votre message..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none text-gray-700"
               disabled={etatsChargement.isCreating}
             />
             <div className="flex justify-between items-center mt-1">
@@ -275,7 +275,7 @@ function PublicationModal({
                 id="publication-immediate"
                 checked={publicationImmediate}
                 onChange={(e) => setPublicationImmediate(e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded "
                 disabled={etatsChargement.isCreating}
               />
               <label htmlFor="publication-immediate" className="ml-2 text-sm text-gray-700">
@@ -309,7 +309,7 @@ function PublicationModal({
                   name="statut"
                   value={formData.statut}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-700"
                   disabled={etatsChargement.isCreating}
                 >
                   <option value={StatutPublicationEnum.brouillon}>Brouillon</option>
@@ -357,7 +357,6 @@ function PublicationModal({
   );
 }
 
-// Composant principal de la page Historique
 export default function HistoriqueContenuPage() {
   const { contenus, isPending, error, deleteContenu } = useContenu();
   const { utilisateur } = useCurrentUtilisateur();
@@ -369,15 +368,13 @@ export default function HistoriqueContenuPage() {
     type: 'success' | 'error';
   }>({ show: false, message: '', type: 'success' });
 
-  // ✅ MODIFIÉ : Filtrer les contenus UNIQUEMENT pour l'utilisateur connecté
+
   const userContenus = contenus.filter(contenu => {
-    // Vérifier que l'utilisateur est propriétaire du contenu
-    // Cette logique dépend de votre structure de données
-    // Supposons que le contenu a un champ id_utilisateur
+
     return contenu.id_utilisateur === utilisateur?.id;
   });
 
-  // Fonction de filtrage des contenus par recherche
+
   const filterContenus = (contenus: Contenu[], query: string) => {
     if (!query.trim()) return contenus;
 
@@ -470,7 +467,6 @@ export default function HistoriqueContenuPage() {
         </div>
       )}
 
-      {/* Modal de confirmation de suppression */}
       {contenuToDelete !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-scale-in">
@@ -514,7 +510,6 @@ export default function HistoriqueContenuPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Historique des contenus</h1>
             
-            {/* ✅ MODIFIÉ : Indicateur de confidentialité stricte */}
             <div className="mt-2 flex items-center text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -524,7 +519,6 @@ export default function HistoriqueContenuPage() {
               </span>
             </div>
 
-            {/* Indicateur de recherche active */}
             {searchQuery && (
               <div className="mt-2 flex items-center text-sm text-blue-600">
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -600,7 +594,6 @@ export default function HistoriqueContenuPage() {
   );
 }
 
-// Composant Carte de Contenu avec bouton Publier
 function ContenuCard({ contenu, onDelete, searchQuery }: { 
   contenu: Contenu; 
   onDelete: () => void;
@@ -608,11 +601,9 @@ function ContenuCard({ contenu, onDelete, searchQuery }: {
 }) {
   const { data: projet } = useProjetById(contenu.id_projet || null);
   const { data: template } = useTemplateById(contenu.id_template || null);
-  
-  // State pour la modal de publication
+
   const [isPublicationModalOpen, setIsPublicationModalOpen] = useState(false);
 
-  // Composant pour mettre en évidence le texte de recherche
   const HighlightText = ({ text, searchQuery }: { text: string; searchQuery: string }) => {
     if (!searchQuery.trim() || !text) return <>{text}</>;
     
@@ -666,7 +657,6 @@ function ContenuCard({ contenu, onDelete, searchQuery }: {
               </span>
             </div>
 
-            {/* ✅ MODIFIÉ : Affichage du projet avec badge de confidentialité */}
             <div className="flex items-center text-xs text-gray-600">
               <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -741,7 +731,6 @@ function ContenuCard({ contenu, onDelete, searchQuery }: {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
-          Détails
         </Link>
         
         <div className="flex space-x-3">
@@ -772,7 +761,7 @@ function ContenuCard({ contenu, onDelete, searchQuery }: {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            S
+            Supprimer
           </button>
         </div>
       </div>

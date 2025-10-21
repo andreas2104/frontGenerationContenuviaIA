@@ -1,6 +1,6 @@
 import { apiClient } from "./clientService";
 
-const apiUrl = "/auth"; 
+const  AUTH_ENDPOINT = "/auth"; 
 
 export interface AuthResponse {
   access_token: string;
@@ -24,7 +24,7 @@ export interface RegisterData {
  * Connexion utilisateur
  */
 export const login = async (data: LoginData): Promise<AuthResponse> => {
-  const response = await apiClient<AuthResponse>(`${apiUrl}/login`, {
+  const response = await apiClient<AuthResponse>(`${AUTH_ENDPOINT}/login`, {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -41,7 +41,7 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
  * Inscription utilisateur
  */
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
-  const response = await apiClient<AuthResponse>(`${apiUrl}/register`, {
+  const response = await apiClient<AuthResponse>(`${AUTH_ENDPOINT}/register`, {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -64,6 +64,20 @@ export const logout = (): void => {
  * Connexion Google (redirection OAuth)
  * consommed by 0auth route io e
  */
+
+const OAuth_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+if (!OAuth_BASE_URL) {
+  console.error('API URL UNDEFINED');
+}
+
 export const googleLoginRedirect = () => {
-  window.location.href = "http://127.0.0.1:5000/api/oauth/login/google";
+  // window.location.href = "http://127.0.0.1:5000/api/oauth/login/google";
+  window.location.href = `${OAuth_BASE_URL}/oauth/login/google`;
 };
+
+
+export const xLoginRedirect = () => {
+  // window.location.href = "http://127.0.0.1:/5000/api/oauth/login/x";
+  window.location.href = `${OAuth_BASE_URL}/oauth/login/x`;
+};
+

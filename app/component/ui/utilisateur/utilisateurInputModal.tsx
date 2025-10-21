@@ -45,7 +45,6 @@ export default function UtilisateurInputModal({ utilisateur, onClose, onSave, on
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    // Validation basique de l'email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast.error("❌ Veuillez entrer une adresse email valide.");
@@ -62,7 +61,6 @@ export default function UtilisateurInputModal({ utilisateur, onClose, onSave, on
         type_compte: formData.type_compte 
       });
 
-      // Notification de succès
       if (utilisateur) {
         toast.success("🔄 Utilisateur modifié avec succès !");
         if (onSuccess) onSuccess('edit', `${formData.prenom} ${formData.nom}`);
