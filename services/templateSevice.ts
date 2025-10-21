@@ -4,7 +4,9 @@ import { apiClient } from "./clientService";
 
 export const fetchAllTemplates = async (): Promise<Template[]> => {
   console.log(' Récupération des templates...');
-  return apiClient<Template[]>('/templates', {method: 'GET' });
+  const templates = await apiClient<Template[]>('/templates',
+     {method: 'GET' });
+     return templates.sort((a, b) => b.id - a.id);
 };
 
 export const fetchTempleteById = async (templateId: number): Promise<Template> => {

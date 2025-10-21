@@ -6,6 +6,8 @@ import ProjetInputModal from "./projetInputModal";
 import { Projet } from "@/types/projet";
 import { useCurrentUtilisateur } from "@/hooks/useUtilisateurs";
 import { useSearch } from "@/app/context/searchContext";
+import {  } from "react-toastify";
+import { Users } from "lucide-react";
 // import { useSearch } from "@/context/searchContext"; // Import du contexte
 
 export default function ProjetTableModal() {
@@ -23,7 +25,7 @@ export default function ProjetTableModal() {
     type: 'success' | 'error';
   }>({ show: false, message: '', type: 'success' });
 
-  // Afficher une notification temporaire
+
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -31,12 +33,12 @@ export default function ProjetTableModal() {
     }, 3000);
   };
 
-  // Fermer la notification manuellement
+
   const closeNotification = () => {
     setNotification({ show: false, message: '', type: 'success' });
   };
 
-  // Fonction de filtrage des projets basée sur la recherche
+
   const filterProjets = (projets: Projet[], query: string) => {
     if (!query.trim()) return projets;
     
@@ -81,7 +83,7 @@ export default function ProjetTableModal() {
     );
   }
 
-  // Filtrer les projets selon les droits ET la recherche
+
   const filteredByRights = isAdmin 
     ? projets 
     : projets.filter(p => Number(p.id_utilisateur) === Number(utilisateur.id));
@@ -197,7 +199,7 @@ export default function ProjetTableModal() {
             
             <div className="mt-2">
               <p className="text-sm text-gray-600">
-                Êtes-vous sûr de vouloir supprimer le projet <strong>"{projetToDelete.nom}"</strong> ?
+                Êtes-vous sûr de vouloir supprimer le projet <strong>`{projetToDelete.nom}`</strong> ?
                 Cette action est irréversible.
               </p>
             </div>
@@ -239,14 +241,14 @@ export default function ProjetTableModal() {
             <h1 className="text-3xl font-bold text-gray-900">
               {isAdmin ? 'Gestion Projets (Admin)' : 'Mes Projets'}
             </h1>
-            <p className="text-gray-600 mt-2">
+            {/* <p className="text-gray-600 mt-2">
               Connecté en tant que: <span className="font-semibold text-gray-800">{utilisateur.prenom} {utilisateur.nom}</span>
               {isAdmin && (
                 <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-                  Admin
+                 
                 </span>
               )}
-            </p>
+            </p> */}
             
             {/* Indicateur de recherche active */}
             {searchQuery && (
@@ -255,7 +257,7 @@ export default function ProjetTableModal() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <span>
-                  Recherche: "<strong>{searchQuery}</strong>" 
+                  Recherche: `<strong>{searchQuery}</strong>` 
                   ({filteredProjets.length} résultat{filteredProjets.length !== 1 ? 's' : ''})
                 </span>
               </div>
@@ -325,8 +327,8 @@ export default function ProjetTableModal() {
                         )}
                       </h2>
                       {isAdmin && Number(projet.id_utilisateur) !== Number(utilisateur.id) && (
-                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
-                          Autre utilisateur
+                        <span className="text-xs  text-green-800 px-2 py-1 rounded-full font-medium">
+                          <Users/>
                         </span>
                       )}
                     </div>

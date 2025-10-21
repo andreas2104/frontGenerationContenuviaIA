@@ -1,4 +1,9 @@
-const apiUrl = 'http://127.0.0.1:5000/api';
+// const apiUrl = 'http://127.0.0.1:5000/api';
+const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+if (!apiUrl) {
+  console.error('API URL UNDEFINED url');
+}
 
 export const apiClient = async <T>(
   endpoint: string,
@@ -14,6 +19,7 @@ export const apiClient = async <T>(
     const response = await fetch(`${apiUrl}${endpoint}`, {
       ...options,
       headers: { ...headers, ...options.headers },
+      credentials: 'include',
       mode: 'cors',
     });
 

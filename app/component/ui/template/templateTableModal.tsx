@@ -6,6 +6,7 @@ import { useState } from "react";
 import TemplateInputModal from "./templateInputModal";
 import { useCurrentUtilisateur } from "@/hooks/useUtilisateurs";
 import { useSearch } from "@/app/context/searchContext";
+import {  Users } from "lucide-react";
 
 export default function TemplateTableModal() {
   const { templates, isPending, deleteTemplate } = useTemplate();
@@ -22,7 +23,7 @@ export default function TemplateTableModal() {
     type: 'success' | 'error';
   }>({ show: false, message: '', type: 'success' });
 
-  // Afficher une notification temporaire
+
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
@@ -30,12 +31,10 @@ export default function TemplateTableModal() {
     }, 3000);
   };
 
-  // Fermer la notification manuellement
   const closeNotification = () => {
     setNotification({ show: false, message: '', type: 'success' });
   };
 
-  // Fonction de filtrage des templates
   const filterTemplates = (templates: Template[], query: string) => {
     if (!query.trim()) return templates;
 
@@ -45,9 +44,8 @@ export default function TemplateTableModal() {
       (template.public ? 'public' : 'privé').includes(lowerQuery) ||
       template.date_creation?.toLowerCase().includes(lowerQuery) ||
       template.date_modification?.toLowerCase().includes(lowerQuery) ||
-      // Recherche dans la structure si c'est une chaîne
       (typeof template.structure === 'string' && template.structure.toLowerCase().includes(lowerQuery)) ||
-      // Recherche dans la structure si c'est un objet
+
       (typeof template.structure === 'object' && JSON.stringify(template.structure).toLowerCase().includes(lowerQuery))
     );
   };
@@ -273,7 +271,7 @@ export default function TemplateTableModal() {
             
             <div className="mt-2">
               <p className="text-sm text-gray-600">
-                Êtes-vous sûr de vouloir supprimer le template <strong>"{templateToDelete.nom}"</strong> ?
+                Êtes-vous sûr de vouloir supprimer le template <strong>`{templateToDelete.nom}`</strong> ?
                 Cette action est irréversible.
               </p>
             </div>
@@ -331,7 +329,7 @@ export default function TemplateTableModal() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <span>
-                  Recherche: "<strong>{searchQuery}</strong>"
+                  Recherche: `<strong>{searchQuery}</strong>`
                   ({filteredTemplates.length} résultat{filteredTemplates.length !== 1 ? 's' : ''})
                 </span>
               </div>
@@ -418,8 +416,9 @@ export default function TemplateTableModal() {
                       {/* Badges pour identifier le propriétaire */}
                       <div className="flex gap-1">
                         {isAdmin && Number(t.id_utilisateur) !== Number(utilisateur.id) && (
-                          <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
-                            Autre utilisateur
+                          <span className="text-xs  text-yellow-800 mb-3  px-3 py-2 rounded-full font-medium">
+                           
+                          <Users/>
                           </span>
                         )}
                         {!isAdmin && Number(t.id_utilisateur) !== Number(utilisateur.id) && t.public && (

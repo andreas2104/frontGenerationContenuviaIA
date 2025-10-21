@@ -7,7 +7,7 @@ import {
   deleteUtilisateur,
 } from "@/services/utilisateurService";
 
-// Gestion de l'auth local
+
 const useAuth = () => {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
@@ -15,7 +15,7 @@ const useAuth = () => {
   const logout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("authToken");
-      window.location.href = "/login";
+      window.location.href = "/";
     }
   };
 
@@ -26,7 +26,7 @@ const useAuth = () => {
   };
 };
 
-// Récupération de l'utilisateur courant
+
 export const useCurrentUtilisateur = () => {
   const { token, isAuthenticated, logout } = useAuth();
 
@@ -37,7 +37,7 @@ export const useCurrentUtilisateur = () => {
     refetch,
   } = useQuery({
     queryKey: ["currentUtilisateur"],
-    queryFn: fetchCurrentUtilisateur, // ✅ récupère le token depuis le service
+    queryFn: fetchCurrentUtilisateur, 
     enabled: isAuthenticated,
     retry: false,
     refetchOnWindowFocus: false,
@@ -90,7 +90,6 @@ export const useUtilisateurs = () => {
     },
   });
 
-  // Mutation delete utilisateur
   const deleteMutation = useMutation({
     mutationFn: (id: number) => {
       if (!token) throw new Error("Token manquant");
