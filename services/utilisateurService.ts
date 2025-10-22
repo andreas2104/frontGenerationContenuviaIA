@@ -1,41 +1,43 @@
 'use client';
 
-import { Utilisateur } from "@/types/utilisateur";
 import { apiClient } from "./clientService";
+import { Utilisateur } from "@/types/utilisateur";
 
-export const fetchCurrentUtilisateur = async (): Promise<Utilisateur> => {
-  console.log('Récupération de l\'utilisateur actuel...');
-  const data = apiClient<Utilisateur>('/utilisateurs/me', {
-    method: 'GET',
-  });
-  console.log(data);
-   return data;
-
+export const fetchCurrentUtilisateur = async (): Promise<Utilisateur | null> => {
+  const response = await apiClient<{ utilisateur?: Utilisateur }>("/utilisateurs/me");
+  console.log("user", response.utilisateur);
+  return response.utilisateur || null;
 };
 
+// this is for an object array 
+// export const fetchUtilisateurs = async (): Promise<Utilisateur[]> => {
+//   const response = await apiClient<{ utilisateurs: Utilisateur[] }>("/utilisateurs", {
+//   });
+//   return response.utilisateurs || [];
+// };
 
 export const fetchUtilisateurs = async (): Promise<Utilisateur[]> => {
-  console.log('Récupération de tous les utilisateurs...');
-  const data =  await apiClient<Utilisateur[]>('/utilisateurs', {
-    method: 'GET',
+  return apiClient<Utilisateur[]>(`/utilisateurs`, {
+    method: "GET"
   });
-  console.log("all data",data);
-  return data.sort((a, b) => b.id - a.id);
-};
+}
 
-
-export const updateUtilisateur = async (utilisateur: Partial<Utilisateur>): Promise<Utilisateur> => {
-  console.log('Mise à jour de l\'utilisateur ID:', utilisateur.id);
-  return apiClient<Utilisateur>(`/utilisateurs/${utilisateur.id}`, {
-    method: 'PUT',
+export const updateUtilisateur = async (utilisateur: Partial<Utilisateur>): Promise<any> => {
+  return apiClient(`/utilisateurs/${utilisateur.id}`, {
+    method: "PUT",
     body: JSON.stringify(utilisateur),
   });
 };
 
-
-export const deleteUtilisateur = async (id: number): Promise<{ message: string }> => {
-  console.log('Suppression de l\'utilisateur ID:', id);
-  return apiClient<{ message: string }>(`/utilisateurs/${id}`, {
-    method: 'DELETE',
+export const deleteUtilisateur = async (id: number): Promise<any> => {
+  return apiClient(`/utilisateurs/${id}`, {
+    method: "DELETE",
   });
 };
+
+export const logoutUtilisateur = async (): Promise<{message: string}> => {
+  return apiClient<{message: string}>(`/auth/logout`, {
+    method: 'POST',
+    credentials: 'include'
+  })
+}

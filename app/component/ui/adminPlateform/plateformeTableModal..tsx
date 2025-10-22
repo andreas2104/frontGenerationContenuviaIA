@@ -36,7 +36,7 @@ export default function AdminPlateformeConfig() {
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState<'config' | 'connexions'>('config');
 
-  // 🔒 Vérification des permissions
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -239,9 +239,9 @@ export default function AdminPlateformeConfig() {
                           <div className="text-sm font-medium text-gray-900 capitalize">
                             {plateforme.nom}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          {/* <div className="text-sm text-gray-500">
                             ID: {plateforme.id}
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </td>
