@@ -5,31 +5,52 @@ import {
   fetchUtilisateurs,
   updateUtilisateur,
   deleteUtilisateur,
+  logoutUtilisateur,
 } from "@/services/utilisateurService";
 
 
-const useAuth = () => {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+// const useAuth = () => {
+//   console.log("useAuth")
+//   const user =
+//     typeof window !== "undefined" ? .getItem("user") : null;
 
-  const logout = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("authToken");
+//   const logout = () => {
+//     if (typeof window !== "undefined") {
+//       localStorage.removeItem("user");
+//       window.location.href = "/";
+//     }
+//   };
+
+
+//   console.log("USER", user)
+
+//   return {
+//     user: user ? JSON.parse(user) : null,
+//     isAuthenticated: !!user,
+//     logout,
+//   };
+// };
+
+export const useLogout = () => {
+  const queryclient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logoutUtilisateur,
+    onSuccess: (data) => {
+      console.log(data.message);
+      queryclient.removeQueries({ queryKey: ['currentUtilisateur']});
+      queryclient.removeQueries({ queryKey: ["utilisateurs"]});
       window.location.href = "/";
-    }
-  };
-
-  return {
-    token,
-    isAuthenticated: !!token,
-    logout,
-  };
+    },
+    onError: (error) => {
+      console.error('Erreur de deconnexion:', error);
+    },
+  });
 };
 
-
 export const useCurrentUtilisateur = () => {
-  const { token, isAuthenticated, logout } = useAuth();
-
+  // const { token, isAuthenticated, logout } = useAuth();
+  const {mutate: logout} = useLogout();
   const {
     data: utilisateur,
     isLoading,
@@ -38,24 +59,27 @@ export const useCurrentUtilisateur = () => {
   } = useQuery({
     queryKey: ["currentUtilisateur"],
     queryFn: fetchCurrentUtilisateur, 
-    enabled: isAuthenticated,
+    // enabled: isAuthenticated,
     retry: false,
     refetchOnWindowFocus: false,
   });
 
   const isAdmin = utilisateur?.type_compte === "admin";
+  if (error && !isLoading) {
+    logout()
+  }
 
   // Déconnexion auto si erreur d'auth
-  if (error && !isLoading && isAuthenticated) {
-    console.error("Erreur utilisateur, déconnexion automatique");
-    logout();
-  }
+  // if (error && !isLoading && isAuthenticated) {
+  //   console.error("Erreur utilisateur, déconnexion automatique");
+  //   logout();
+  // }
 
   return {
     utilisateur,
     isAdmin,
     isLoading,
-    isAuthenticated,
+    // isAuthenticated,
     error,
     logout,
     refetch,
@@ -65,25 +89,23 @@ export const useCurrentUtilisateur = () => {
 
 export const useUtilisateurs = () => {
   const queryClient = useQueryClient();
-  const { token } = useAuth();
   const { isAdmin } = useCurrentUtilisateur();
 
- 
   const {
     data: utilisateurs = [],
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["utilisateurs", token],
-    queryFn: () => fetchUtilisateurs(token!),
-    enabled: !!token && isAdmin, 
+    queryKey: ["utilisateurs"],
+    queryFn: fetchUtilisateurs,
+    enabled: isAdmin, 
     refetchOnWindowFocus: false,
   });
 
+
   const updateMutation = useMutation({
     mutationFn: (utilisateur: Partial<Utilisateur>) => {
-      if (!token) throw new Error("Token manquant");
-      return updateUtilisateur(utilisateur, token);
+      return updateUtilisateur(utilisateur);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["utilisateurs"] });
@@ -92,8 +114,7 @@ export const useUtilisateurs = () => {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => {
-      if (!token) throw new Error("Token manquant");
-      return deleteUtilisateur(id, token);
+      return deleteUtilisateur(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["utilisateurs"] });

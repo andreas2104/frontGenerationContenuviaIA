@@ -1,8 +1,7 @@
-// pages/oauth/redirect.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/router';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, ExternalLink, AlertTriangle, CheckCircle } from 'lucide-react';
 
 export default function OAuthRedirectPage() {
@@ -12,7 +11,7 @@ export default function OAuthRedirectPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   const authUrl = searchParams.get('auth_url');
-  const platform = localStorage.getItem('oauth_platform') || 'la plateforme';
+  const platform = typeof window !== 'undefined' ? localStorage.getItem('oauth_platform') || 'la plateforme' : 'la plateforme';
 
   useEffect(() => {
     const initiateOAuthRedirect = async () => {
@@ -42,7 +41,9 @@ export default function OAuthRedirectPage() {
   }, [authUrl]);
 
   const handleCancel = () => {
-    const errorUrl = localStorage.getItem('oauth_error_url') || '/parametres/plateformes?error=cancelled';
+    const errorUrl = typeof window !== 'undefined' 
+      ? localStorage.getItem('oauth_error_url') || '/parametres/plateformes?error=cancelled'
+      : '/parametres/plateformes?error=cancelled';
     router.push(errorUrl);
   };
 

@@ -1,40 +1,43 @@
-// const apiUrl = 'http://127.0.0.1:5000/api';
-const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if (!apiUrl) {
-  console.error('API URL UNDEFINED url');
-}
+const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api'; // ← corrige ici si besoin
 
 export const apiClient = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  const token = localStorage.getItem('access_token');
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
+  const headers: HeadersInit = options.body
+    ? { 'Content-Type': 'application/json', ...(options.headers || {}) }
+    : { ...(options.headers || {}) };
 
-  try {
-    const response = await fetch(`${apiUrl}${endpoint}`, {
-      ...options,
-      headers: { ...headers, ...options.headers },
+  let response = await fetch(`${apiUrl}${endpoint}`, {
+    ...options,
+    headers,
+    credentials: 'include', // ← indispensable pour les cookies
+  });
+
+  // Si 401 → on tente un refresh
+  if (response.status === 401) {
+    const refreshResponse = await fetch(`${apiUrl}/auth/refresh`, {
+      method: 'POST',
       credentials: 'include',
-      mode: 'cors',
     });
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        localStorage.removeItem('access_token');
-        throw new Error('Session expirée. Veuillez vous reconnecter.');
-      }
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Erreur ${response.status}`);
+    if (refreshResponse.ok) {
+      // rejouer la requête originale
+      response = await fetch(`${apiUrl}${endpoint}`, {
+        ...options,
+        headers,
+        credentials: 'include',
+      });
+    } else {
+      localStorage.removeItem("user");
+      throw new Error("Session expirée. Veuillez vous reconnecter.");
     }
-
-    return response.json();
-  } catch (error) {
-    console.error(`Erreur lors de la requête à ${endpoint}:`, error);
-    throw error;
   }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || "Erreur serveur");
+  }
+
+  return response.json();
 };

@@ -20,7 +20,4 @@ export const fetchModels = async (): Promise<ModelIA[]> => {
   const r = await fetch(`${apiUrl}/modelIA`, { credentials: 'include' });
   if (!r.ok) throw new Error('Erreur modèles');
   return r.json();
-  // Optionnel : filtrer {fournisseur in ['gpt','grok','gpt4all']} et actif
-  // const models = await r.json();
-  // return models.filter((m: ModelIA) => m.actif && ['gpt','grok','gpt4all'].includes(m.fournisseur))
 };

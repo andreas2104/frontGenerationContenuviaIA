@@ -15,9 +15,14 @@ export default function LoginPage() {
   const [googleError, setGoogleError] = useState<string | null>(null);
   const [xError, setXError] = useState<string | null>(null);
 
-  const { mutate: loginUser, isPending, isError, error } = useLogin();
 
-  // Vérifier s'il y a des erreurs d'authentification dans l'URL
+  const { 
+    mutate: loginUser, 
+    isPending, 
+    isError, 
+    error 
+  } = useLogin();
+
   useEffect(() => {
     const errorParam = searchParams.get('error');
     const authProvider = searchParams.get('provider');
@@ -39,7 +44,7 @@ export default function LoginPage() {
       } else if (authProvider === 'x' || errorParam.includes('x') || errorParam.includes('twitter')) {
         setXError(message);
       } else {
-        // Erreur générale
+
         setGoogleError(message);
         setXError(message);
       }
@@ -48,13 +53,19 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    
+
     loginUser(
       { email, mot_de_passe: password },
       {
         onSuccess: (data) => {
-          localStorage.setItem('access_token', data.access_token);
+
           router.push("/dashboard");
         },
+        onError: (error) => {
+ 
+          console.error("Erreur de connexion:", error);
+        }
       }
     );
   };
@@ -79,14 +90,13 @@ export default function LoginPage() {
           Connectez-vous pour accéder à votre tableau de bord.
         </p>
 
-        {/* Afficher les erreurs Google */}
         {googleError && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
             <p className="text-red-600 text-sm">{googleError}</p>
           </div>
         )}
 
-        {/* Afficher les erreurs X */}
+     
         {xError && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
             <p className="text-red-600 text-sm">{xError}</p>
@@ -113,6 +123,7 @@ export default function LoginPage() {
               autoComplete="email"
               placeholder="votre.email@exemple.com"
               required
+              disabled={isPending} 
             />
           </div>
           <div>
@@ -134,6 +145,7 @@ export default function LoginPage() {
               border border-gray-300 dark:border-gray-600 rounded-full shadow-sm 
               placeholder-gray-400 focus:outline-none focus:ring-blue-500 
               focus:border-blue-500"
+              disabled={isPending} 
             />
           </div>
 
@@ -142,6 +154,7 @@ export default function LoginPage() {
               type="checkbox"
               id="remember-me"
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              disabled={isPending} 
             />
             <label
               htmlFor="remember-me"
@@ -151,13 +164,15 @@ export default function LoginPage() {
             </label>
           </div>
 
+        
           {isError && (
-            <p className="text-red-500 text-sm text-center">
-              Erreur:{" "}
-              {error instanceof Error
-                ? error.message
-                : "Une erreur est survenue."}
-            </p>
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <p className="text-red-600 text-sm text-center">
+                {error instanceof Error
+                  ? error.message
+                  : "Une erreur est survenue lors de la connexion."}
+              </p>
+            </div>
           )}
 
           <button
@@ -169,7 +184,17 @@ export default function LoginPage() {
             focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
             transition-colors duration-200 disabled:bg-indigo-300 disabled:cursor-not-allowed"
           >
-            {isPending ? "Connexion en cours..." : "Se connecter"}
+            {isPending ? (
+              <div className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Connexion en cours...
+              </div>
+            ) : (
+              "Se connecter"
+            )}
           </button>
         </form>
 
@@ -183,11 +208,12 @@ export default function LoginPage() {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <button
             onClick={handleGoogleLogin}
+            disabled={isPending} // Désactiver pendant le chargement du login classique
             className="flex items-center justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 
             rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 
             bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 
-            transition-colors duration-200"
+            transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Image
               src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -201,14 +227,15 @@ export default function LoginPage() {
           
           <button
             onClick={handleXLogin} 
+            disabled={isPending} // Désactiver pendant le chargement du login classique
             className="flex items-center justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 
             rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 
             bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
             focus:outline-none focus:ring-2 focus:ring-blue-500 
-            transition-colors duration-200"
+            transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/8/85/X_logo_2023_%28black%29.svg"  // URL externe officielle
+              src="https://upload.wikimedia.org/wikipedia/commons/8/85/X_logo_2023_%28black%29.svg"
               alt="X (Twitter) logo"
               width={20}
               height={20}

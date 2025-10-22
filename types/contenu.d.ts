@@ -46,6 +46,7 @@ export interface ContenuPayload {
 export interface ContenuResponse {
   message: string;
   contenu: string;
+  titre: string;
   type: TypeContenu;
   id: number;
   structure?: {              

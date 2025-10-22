@@ -1,5 +1,6 @@
 import { login, register, AuthResponse, LoginData, RegisterData } from '@/services/authService';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchCurrentUtilisateur } from '@/services/utilisateurService';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 /**
  * Custom hook pour la connexion.
@@ -10,9 +11,7 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (data: LoginData) => login(data),
     onSuccess: (data: AuthResponse) => {
-      localStorage.setItem('access_token', data.access_token);
       if (data.utilisateur) {
-        localStorage.setItem('user', JSON.stringify(data.utilisateur));
         queryClient.setQueryData(['user'], data.utilisateur);
       }
 
@@ -34,9 +33,7 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: (data: RegisterData) => register(data),
     onSuccess: (data: AuthResponse) => {
-      localStorage.setItem('access_token', data.access_token);
       if (data.utilisateur) {
-        localStorage.setItem('user', JSON.stringify(data.utilisateur));
         queryClient.setQueryData(['user'], data.utilisateur);
       }
 
@@ -48,3 +45,11 @@ export const useRegister = () => {
     },
   });
 };
+
+export const usecurrentUser = () => {
+  return useQuery({
+    queryKey: ['user'],
+    queryFn: fetchCurrentUtilisateur,
+    staleTime: 5 * 60 * 1000, 
+  })
+}

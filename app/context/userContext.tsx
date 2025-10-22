@@ -1,6 +1,6 @@
 'use client'
 
-import { useCurrentUtilisateur } from "@/hooks/useUtilisateurs";
+import { useCurrentUtilisateur, } from "@/hooks/useUtilisateurs";
 import { createContext, useContext } from "react";
 
 interface UserContextProps {
@@ -14,7 +14,7 @@ interface UserContextProps {
 const UserContext = createContext<UserContextProps | undefined>(undefined);
 
 export const UserProvider = ({ children}: { children: React.ReactNode }) => {
-  const { utilisateur, isAdmin, logout, isLoading } = useCurrentUtilisateur();
+  const { utilisateur, isAdmin,logout , isLoading } = useCurrentUtilisateur();
 
   return (
     <UserContext.Provider value={{utilisateur, isAdmin, logout, isLoading}}>

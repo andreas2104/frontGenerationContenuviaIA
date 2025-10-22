@@ -374,13 +374,13 @@ export default function GenererContenuPage() {
     titre: '',
   });
 
-  // ✅ NOUVEAU : État pour les images uploadées
+
   const [images, setImages] = useState<ImageFile[]>([]);
   const [selectedModel, setSelectedModel] = useState<any>(null);
   // ✅ NOUVEAU : État pour la modal de publication
   const [isPublicationModalOpen, setIsPublicationModalOpen] = useState(false);
 
-  // ✅ NOUVEAU : Détecter si le modèle sélectionné est multimodal
+ 
   useEffect(() => {
     if (payload.id_model && models.data) {
       const model = models.data.find(m => m.id === payload.id_model);
@@ -390,7 +390,13 @@ export default function GenererContenuPage() {
     }
   }, [payload.id_model, models.data]);
 
-  // ✅ NOUVEAU : Gestion de l'upload d'images
+ useEffect(() => {
+  if (result) {
+    console.log("reponse complete", result);
+    console.log("titre", result.titre);
+  }
+ }, [result]);
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -410,7 +416,7 @@ export default function GenererContenuPage() {
     setImages(prev => [...prev, ...newImages]);
   };
 
-  // ✅ NOUVEAU : Supprimer une image
+
   const removeImage = (index: number) => {
     setImages(prev => {
       const newImages = [...prev];
@@ -420,7 +426,7 @@ export default function GenererContenuPage() {
     });
   };
 
-  // ✅ NOUVEAU : Convertir images en base64 pour l'API
+  
   const convertImagesToBase64 = async (): Promise<any[]> => {
     const base64Images = [];
     
@@ -428,7 +434,7 @@ export default function GenererContenuPage() {
       try {
         const base64 = await fileToBase64(img.file);
         base64Images.push({
-          base64: base64.split(',')[1], // Retirer le prefix data:image/...
+          base64: base64.split(',')[1], // Retirer le prefix data:image/
           mime_type: img.file.type
         });
       } catch (error) {
@@ -439,7 +445,7 @@ export default function GenererContenuPage() {
     return base64Images;
   };
 
-  // ✅ NOUVEAU : Helper pour conversion fichier -> base64
+
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -620,7 +626,7 @@ export default function GenererContenuPage() {
                         Cliquez pour ajouter des images
                       </span>
                       <span className="text-xs text-gray-500">
-                        PNG, JPG, JPEG jusqu'à 5MB
+                        PNG, JPG, JPEG jusquà 5MB
                       </span>
                     </div>
                   </label>

@@ -1,10 +1,9 @@
 import { apiClient } from "./clientService";
 
-const  AUTH_ENDPOINT = "/auth"; 
+const AUTH_ENDPOINT = "/auth"; 
 
 export interface AuthResponse {
-  access_token: string;
-  refresh_token?: string;
+  message: string;
   utilisateur: any;
 }
 
@@ -20,64 +19,67 @@ export interface RegisterData {
   mot_de_passe: string;
 }
 
-/**
- * Connexion utilisateur
- */
+
 export const login = async (data: LoginData): Promise<AuthResponse> => {
-  const response = await apiClient<AuthResponse>(`${AUTH_ENDPOINT}/login`, {
+  return await apiClient<AuthResponse>(`${AUTH_ENDPOINT}/login`, {
     method: "POST",
+    credentials: "include",
     body: JSON.stringify(data),
   });
-
-  // On stocke le token pour les prochaines requêtes
-  if (response.access_token) {
-    localStorage.setItem("access_token", response.access_token);
-  }
-
-  return response;
 };
 
-/**
- * Inscription utilisateur
- */
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
-  const response = await apiClient<AuthResponse>(`${AUTH_ENDPOINT}/register`, {
+  return await apiClient<AuthResponse>(`${AUTH_ENDPOINT}/register`, {
     method: "POST",
+    credentials: "include",
     body: JSON.stringify(data),
   });
+};
 
-  if (response.access_token) {
-    localStorage.setItem("access_token", response.access_token);
+export const logout = async (): Promise<void> => {
+  await apiClient(`${AUTH_ENDPOINT}/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+};
+
+export const fetchCurrentUtilisateur = async (): Promise<any> => {
+  const response = await apiClient<{ utilisateur: any }>(`${AUTH_ENDPOINT}/me`, {
+    credentials: "include",
+  });
+
+  return response.utilisateur;
+};
+
+export const isAuthenticated = async (): Promise<boolean> => {
+  try {
+    const res = await apiClient(`${AUTH_ENDPOINT}/me`, {
+      credentials: "include",
+    });
+    return !!res.utilisateur;
+  } catch {
+    return false;
   }
-
-  return response;
 };
 
-/**
- * Déconnexion → suppression du token
- */
-export const logout = (): void => {
-  localStorage.removeItem("access_token");
-};
-
+export const logoutUtilisateur = async (): Promise<{message: string}> => {
+  return apiClient<{message: string}>(`/auth/logout`, {
+    method: 'POST',
+    credentials: 'include'
+  })
+}
 /**
  * Connexion Google (redirection OAuth)
- * consommed by 0auth route io e
  */
-
 const OAuth_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 if (!OAuth_BASE_URL) {
   console.error('API URL UNDEFINED');
 }
 
 export const googleLoginRedirect = () => {
-  // window.location.href = "http://127.0.0.1:5000/api/oauth/login/google";
   window.location.href = `${OAuth_BASE_URL}/oauth/login/google`;
 };
 
-
 export const xLoginRedirect = () => {
-  // window.location.href = "http://127.0.0.1:/5000/api/oauth/login/x";
   window.location.href = `${OAuth_BASE_URL}/oauth/login/x`;
 };
-

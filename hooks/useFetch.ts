@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Configuration de base d'Axios
+
 const api = axios.create({
-  baseURL: '/api', // ou votre URL d'API
+  baseURL: '/api', 
   timeout: 10000,
 });
 

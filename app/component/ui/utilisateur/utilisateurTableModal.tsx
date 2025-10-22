@@ -94,7 +94,7 @@ export default function UtilisateurTableModal() {
                   <th className="py-3 px-6 text-left">Email</th>
                   <th className="py-3 px-6 text-left">Type de Compte</th>
                   <th className="py-3 px-6 text-left">Date de Création</th>
-                   <th className="py-3 px-6 text-left">Photo</th>
+                   {/* <th className="py-3 px-6 text-left">Photo</th> */}
                   <th className="py-3 px-6 text-center">Actions</th>
                 </tr>
               </thead>
@@ -103,7 +103,7 @@ export default function UtilisateurTableModal() {
                   <tr key={u.id} className="border-b border-gray-200 hover:bg-gray-100">
                     <td className="py-3 px-6">{u.nom} {u.prenom}</td>
                     <td className="py-3 px-6">{u.email}</td>
-                      <td className="py-3 px-6">{u.photo}</td>
+                      {/* <td className="py-3 px-6">{u.photo}</td> */}
                     <td className="py-3 px-6">
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                         u.type_compte === "admin"
