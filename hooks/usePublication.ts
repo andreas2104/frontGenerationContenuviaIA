@@ -1,3 +1,4 @@
+// src/hooks/usePublications.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchAllPublications,
@@ -5,24 +6,18 @@ import {
   createPublication,
   updatePublication,
   deletePublication,
-  publishNow,
-  schedulePublication,
-  cancelPublication,
   fetchPublicationStats,
 } from '@/services/publicationService';
 import {
-  Publication,
   PublicationCreate,
   PublicationUpdate,
   StatutPublicationEnum,
-  PublicationStats,
 } from '@/types/publication';
 import React from "react";
 
-
-
 export const usePublications = () => {
   const queryClient = useQueryClient();
+  
   const {
     data: publications = [],
     isLoading,
@@ -32,23 +27,22 @@ export const usePublications = () => {
     queryKey: ['publications'],
     queryFn: fetchAllPublications,
     refetchOnWindowFocus: false,
-    select: (data) => data, 
   });
 
   const { publicationsFiltrees, statistiques, prochainesPublications } = React.useMemo(() => {
     const maintenant = new Date();
-    
+
     const brouillons = publications.filter(p => p.statut === StatutPublicationEnum.brouillon);
     const programmees = publications.filter(p => p.statut === StatutPublicationEnum.programme);
     const publiees = publications.filter(p => p.statut === StatutPublicationEnum.publie);
-    const enErreur = publications.filter(p => p.statut === StatutPublicationEnum.erreur);
-    
+    const enEchec = publications.filter(p => p.statut === StatutPublicationEnum.echec);
+
     const prochaines = programmees.filter(p => {
       if (!p.date_programmee) return false;
       const datePub = new Date(p.date_programmee);
       const diffJours = (datePub.getTime() - maintenant.getTime()) / (1000 * 60 * 60 * 24);
       return diffJours >= 0 && diffJours <= 7;
-    }).sort((a, b) => 
+    }).sort((a, b) =>
       new Date(a.date_programmee!).getTime() - new Date(b.date_programmee!).getTime()
     );
 
@@ -57,7 +51,7 @@ export const usePublications = () => {
         brouillons,
         programmees,
         publiees,
-        enErreur,
+        enEchec,
         toutes: publications,
       },
       statistiques: {
@@ -65,7 +59,7 @@ export const usePublications = () => {
         brouillons: brouillons.length,
         programmees: programmees.length,
         publiees: publiees.length,
-        enErreur: enErreur.length,
+        enEchec: enEchec.length,
         prochaines: prochaines.length,
       },
       prochainesPublications: prochaines,
@@ -78,7 +72,7 @@ export const usePublications = () => {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['publications'] });
         queryClient.invalidateQueries({ queryKey: ['contenus'] });
-        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
+        queryClient.invalidateQueries({ queryKey: ['publicationStats'] });
       },
     }),
 
@@ -87,7 +81,7 @@ export const usePublications = () => {
         updatePublication(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['publications'] });
-        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
+        queryClient.invalidateQueries({ queryKey: ['publicationStats'] });
       },
     }),
 
@@ -95,31 +89,7 @@ export const usePublications = () => {
       mutationFn: deletePublication,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['publications'] });
-        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
-      },
-    }),
-
-    publication: useMutation({
-      mutationFn: publishNow,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['publications'] });
-        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
-      },
-    }),
-
-    programmation: useMutation({
-      mutationFn: ({ id, date }: { id: number; date: string }) =>
-        schedulePublication(id, date),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['publications'] });
-        queryClient.invalidateQueries({ queryKey: ['PublicationStats']});
-      },
-    }),
-
-    annulation: useMutation({
-      mutationFn: cancelPublication,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['publications'] });
+        queryClient.invalidateQueries({ queryKey: ['publicationStats'] });
       },
     }),
   };
@@ -148,39 +118,12 @@ export const usePublications = () => {
         throw new Error(`Échec de la suppression: ${error}`);
       }
     },
-
-    publier: async (id: number) => {
-      try {
-        return await mutations.publication.mutateAsync(id);
-      } catch (error) {
-        throw new Error(`Échec de la publication: ${error}`);
-      }
-    },
-
-    programmer: async (id: number, date: string) => {
-      try {
-        return await mutations.programmation.mutateAsync({ id, date });
-      } catch (error) {
-        throw new Error(`Échec de la programmation: ${error}`);
-      }
-    },
-
-    annuler: async (id: number) => {
-      try {
-        return await mutations.annulation.mutateAsync(id);
-      } catch (error) {
-        throw new Error(`Échec de l'annulation: ${error}`);
-      }
-    },
   };
 
   const etatsChargement = {
     isCreating: mutations.creation.isPending,
     isUpdating: mutations.modification.isPending,
     isDeleting: mutations.suppression.isPending,
-    isPublishing: mutations.publication.isPending,
-    isScheduling: mutations.programmation.isPending,
-    isCanceling: mutations.annulation.isPending,
     isLoadingGlobal: isLoading,
     isMutating: Object.values(mutations).some(mutation => mutation.isPending),
   };
@@ -197,8 +140,6 @@ export const usePublications = () => {
     refetch,
   };
 };
-
-
 
 export const usePublication = (publicationId: number | null) => {
   return useQuery({
@@ -218,18 +159,19 @@ export const usePublicationStats = () => {
       [StatutPublicationEnum.brouillon]: publications.filter(p => p.statut === StatutPublicationEnum.brouillon).length,
       [StatutPublicationEnum.programme]: publications.filter(p => p.statut === StatutPublicationEnum.programme).length,
       [StatutPublicationEnum.publie]: publications.filter(p => p.statut === StatutPublicationEnum.publie).length,
-      [StatutPublicationEnum.erreur]: publications.filter(p => p.statut === StatutPublicationEnum.erreur).length,
+      [StatutPublicationEnum.echec]: publications.filter(p => p.statut === StatutPublicationEnum.echec).length,
     },
+
     parPlateforme: publications.reduce((acc, pub) => {
-      acc[pub.id_plateforme] = (acc[pub.id_plateforme] || 0) + 1;
+      const plateforme = pub.plateforme;
+      acc[plateforme] = (acc[plateforme] || 0) + 1;
       return acc;
-    }, {} as Record<number, number>),
-    
- 
-    tauxReussite: publications.length > 0 
+    }, {} as Record<string, number>),
+
+    tauxReussite: publications.length > 0
       ? Math.round((publications.filter(p => p.statut === StatutPublicationEnum.publie).length / publications.length) * 100)
       : 0,
-    
+
     publicationsCetteSemaine: publications.filter(p => {
       const datePub = new Date(p.date_creation);
       const maintenant = new Date();
@@ -244,51 +186,53 @@ export const usePublicationStats = () => {
   };
 };
 
-
 export const usePublicationCalendar = () => {
   const { publications } = usePublications();
 
-  const evenementsCalendrier = React.useMemo(() => 
+  const evenementsCalendrier = React.useMemo(() =>
     publications
       .filter(p => p.date_programmee)
       .map(publication => ({
         id: publication.id,
         title: publication.titre_publication,
         start: new Date(publication.date_programmee!),
-        end: new Date(new Date(publication.date_programmee!).getTime() + 30 * 60 * 1000), 
+        end: new Date(new Date(publication.date_programmee!).getTime() + 30 * 60 * 1000),
         statut: publication.statut,
-        plateforme: publication.id_plateforme,
+        plateforme: publication.plateforme,
+        extendedProps: {
+          publicationId: publication.id,
+          statut: publication.statut,
+          plateforme: publication.plateforme,
+        }
       }))
-  , [publications]);
+    , [publications]);
 
   return { evenementsCalendrier };
 };
-
 
 export const usePublicationsAttention = () => {
   const { publications } = usePublications();
 
   const publicationsAttention = React.useMemo(() => ({
-    enErreur: publications.filter(p => p.statut === StatutPublicationEnum.erreur),
+    enEchec: publications.filter(p => p.statut === StatutPublicationEnum.echec),
     brouillonsAnciens: publications.filter(p => {
       if (p.statut !== StatutPublicationEnum.brouillon) return false;
       const dateCreation = new Date(p.date_creation);
       const maintenant = new Date();
       const diffJours = (maintenant.getTime() - dateCreation.getTime()) / (1000 * 60 * 60 * 24);
-      return diffJours > 7; 
+      return diffJours > 7;
     }),
     programmationsImminentes: publications.filter(p => {
       if (p.statut !== StatutPublicationEnum.programme || !p.date_programmee) return false;
       const dateProgrammee = new Date(p.date_programmee);
       const maintenant = new Date();
       const diffHeures = (dateProgrammee.getTime() - maintenant.getTime()) / (1000 * 60 * 60);
-      return diffHeures <= 24; 
+      return diffHeures <= 24;
     }),
   }), [publications]);
 
   return { publicationsAttention };
 };
-
 
 export const usePublicationStatsAdmin = () => {
   return useQuery({
