@@ -2,15 +2,14 @@ export enum StatutPublicationEnum {
   brouillon = 'brouillon',
   programme = 'programme',
   publie = 'publie',
-  erreur = 'erreur',
-  annule = 'annule'
+  echec = 'echec'  
 }
 
 export interface Publication {
   id: number;
   id_utilisateur: number;
   id_contenu: number;
-  id_plateforme: number;
+  plateforme: string; 
   titre_publication: string;
   statut: StatutPublicationEnum;
   date_creation: string;
@@ -25,8 +24,10 @@ export interface Publication {
 
 export interface PublicationCreate {
   id_contenu: number;
-  id_plateforme: number;
-  titre_publication: string;
+  message?: string;
+  image_url?: string; 
+  plateforme: string;  
+  titre_publication?: string;  
   statut?: StatutPublicationEnum;
   date_programmee?: string | null;
   parametres_publication?: Record<string, any>;
@@ -42,9 +43,35 @@ export interface PublicationUpdate {
   message_erreur?: string | null;
 }
 
-export interface PublicationResponse {
+export interface CreatePublicationResponse {
   message: string;
-  publication?: Publication;
+  publication: {
+    id: number;
+    titre: string;
+    statut: string;
+    url_publication?: string;
+    date_publication?: string;
+    date_programmee?: string;
+    contenu_publie: string;
+    image_utilisee?: string;
+  };
+}
+
+export interface PublicationStats {
+  total: number;
+  par_statut: {
+    [key: string]: number;
+  };
+  cette_semaine: number;
+  a_venir: number;
+  dernieres_publications: Array<{
+    id: number;
+    titre: string;
+    statut: string;
+    plateforme: string;
+    date_creation: string;
+  }>;
+  plateforme_populaire: string | null;
 }
 
 export interface PublicationListResponse {
@@ -54,19 +81,11 @@ export interface PublicationListResponse {
   limit?: number;
 }
 
-export interface PublicationStats {
-  total: number;
-  par_statut: Record<StatutPublicationEnum, number>;
-  cette_semaine: number;
-  a_venir: number;
-  dernieres_publications: PublicationResume[];
-  plateforme_populaire: number | null;
-}
-
 export interface PublicationResume {
   id: number;
   titre: string;
   statut: StatutPublicationEnum;
+  plateforme: string;  
   date_creation: string;
 }
 
@@ -75,3 +94,4 @@ export interface StatsResponse {
   stats?: PublicationStats;
   error?: string;
 }
+
