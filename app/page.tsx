@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import AOS from "aos"
 import "aos/dist/aos.css";
 import Link from "next/link";
+import Image from "next/image";
 
 // Hook personnalisé pour l'effet typing
 function useTypewriter(text: string, speed: number = 50) {
@@ -62,8 +63,6 @@ export default function HomePage() {
 
   return(
     <div className="min-h-screen flex flex-col">
-    
-
       <section className="flex-1 relative flex flex-col items-center justify-center pt-20 pb-16 text-center overflow-hidden">
 
         <div data-aos='fade-down' data-aos-delay='300' className="absolute top-5 left-3">
@@ -83,18 +82,65 @@ export default function HomePage() {
         </div>
         
         <div className='relative z-10 w-full max-w-6xl mx-auto px-4'>
-          <h1 data-aos="fade-up" data-aos-delay="1000" className="text-5xl md:text-7xl lg:text-8xl font-extrabold mb-5">
-            <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-green-400'>
-              MEDIA TOWER
-            </span>
-            <br />
-            <span className="text-white">YOUR CONTENT</span>
-          </h1>
+          {/* 🎯 TITRE AVEC LOGO INTÉGRÉ */}
+          <div data-aos="fade-up" data-aos-delay="1000" className="mb-5">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              {/* Ligne 1: SOCIAL + Logo */}
+              <div className="flex items-center justify-center gap-4 md:gap-6">
+                <span className='text-5xl md:text-7xl lg:text-8xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-green-400'>
+                  SOCIAL TOWER
+                </span>
+                <div className="
+                  relative
+                  transform
+                  hover:scale-110
+                  transition-transform
+                  duration-300
+                  group
+                ">
+                  <div className="
+                    absolute 
+                    inset-0 
+                    bg-gradient-to-r 
+                    rounded-2xl 
+                    blur-lg 
+                    opacity-50 
+                    group-hover:opacity-75
+                    transition-opacity
+                    duration-300
+                  "></div>
+                  <Image
+                    src="/image/logs.png"
+                    width={120}
+                    height={120}
+                    alt="Logo"
+                    className="
+                      relative 
+                      z-10
+                    
+                      shadow-2xl
+                     
+                      border-white/20
+                      transform
+                      group-hover:rotate-3
+                      transition-all
+                      duration-300
+                    "
+                    priority
+                  />
+                </div>
+              </div>
+              
+              {/* Ligne 2: Sous-titre */}
+              <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-4">
+                MOTEUR DE CONTENU
+              </div>
+            </div>
+          </div>
           
           <p data-aos="fade-up" data-aos-delay="1200" className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-            Transformez vos idées nos applications Assister par IA
+            Donnez vie à vos idées avec nos applications assistées par l'IA
           </p>
-
 
           <div data-aos="fade-up" data-aos-delay="1400" className="mb-12">
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 max-w-4xl mx-auto">
@@ -146,32 +192,15 @@ export default function HomePage() {
               Commencer maintenant
             </Link>
             
-           <Link 
-            href="/contact"
-                className="px-6 py-3 border border-gray-600 text-gray-300 rounded-full font-semibold hover:bg-gray-800 transition-all"
-                 >
-                Nous contacter
-                </Link>
+            <Link 
+              href="/contact"
+              className="px-6 py-3 border border-gray-600 text-gray-300 rounded-full font-semibold hover:bg-gray-800 transition-all"
+            >
+              Nous contacter
+            </Link>
           </div>
-
-          {/* Stats rapides */}
-          {/* <div data-aos="fade-up" data-aos-delay="1800" className="mt-16 grid grid-cols-2 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-white">50+</div>
-              <div className="text-gray-400 text-sm">Projets réalisés</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-white">24/7</div>
-              <div className="text-gray-400 text-sm">Support IA</div>
-            </div>
-            <div className="text-center col-span-2 md:col-span-1">
-              <div className="text-2xl md:text-3xl font-bold text-white">100%</div>
-              <div className="text-gray-400 text-sm">Satisfaction client</div>
-            </div>
-          </div> */}
         </div>
       </section>
-
     </div>
   )
 }
