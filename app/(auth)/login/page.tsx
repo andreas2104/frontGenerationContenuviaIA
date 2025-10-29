@@ -15,7 +15,6 @@ export default function LoginPage() {
   const [googleError, setGoogleError] = useState<string | null>(null);
   const [xError, setXError] = useState<string | null>(null);
 
-
   const { 
     mutate: loginUser, 
     isPending, 
@@ -44,7 +43,6 @@ export default function LoginPage() {
       } else if (authProvider === 'x' || errorParam.includes('x') || errorParam.includes('twitter')) {
         setXError(message);
       } else {
-
         setGoogleError(message);
         setXError(message);
       }
@@ -54,16 +52,13 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-
     loginUser(
       { email, mot_de_passe: password },
       {
         onSuccess: (data) => {
-
           router.push("/dashboard");
         },
         onError: (error) => {
- 
           console.error("Erreur de connexion:", error);
         }
       }
@@ -83,10 +78,64 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-6 transform transition-all duration-300 hover:shadow-2xl">
-        <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100">
-          Se connecter
-        </h1>
-        <p className="text-center text-gray-500 dark:text-gray-400">
+        
+        {/* 🎯 EN-TÊTE AVEC LOGO IDENTIQUE AU LAYOUT */}
+        <div className="text-center space-y-4">
+          {/* Container logo identique à celui du layout */}
+          <div className='
+            bg-white dark:bg-gray-800
+            rounded-2xl 
+            p-4 
+            shadow-md 
+            border border-gray-200 dark:border-gray-600
+            hover:shadow-lg 
+            hover:border-gray-300 dark:hover:border-gray-500
+            transition-all 
+            duration-300 
+            transform 
+            hover:scale-105
+            group
+            relative
+            overflow-hidden
+            mx-auto
+            w-24
+            h-24
+            flex
+            items-center
+            justify-center
+          '>
+            {/* Effet de lumière subtile */}
+            <div className='
+              absolute 
+              inset-0 
+              bg-gradient-to-br from-white/50 to-transparent 
+              dark:from-gray-700/30
+              opacity-0 
+              group-hover:opacity-100
+              transition-opacity 
+              duration-300
+            '></div>
+            
+            <Image
+              src={"/image/logs.png"}
+              width={60}
+              height={45}
+              alt='Media Tower Logo'
+              className='relative z-10 transition-transform duration-300 group-hover:scale-110'
+            />
+          </div>
+          
+          <div className="space-y-2">
+            {/* <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              Media Tower
+            </h1> */}
+            <p className="text-lg text-gray-600 dark:text-gray-400 font-medium">
+              Se connecter
+            </p>
+          </div>
+        </div>
+        
+        <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
           Connectez-vous pour accéder à votre tableau de bord.
         </p>
 
@@ -96,7 +145,6 @@ export default function LoginPage() {
           </div>
         )}
 
-     
         {xError && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
             <p className="text-red-600 text-sm">{xError}</p>
@@ -164,7 +212,6 @@ export default function LoginPage() {
             </label>
           </div>
 
-        
           {isError && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <p className="text-red-600 text-sm text-center">
@@ -208,7 +255,7 @@ export default function LoginPage() {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <button
             onClick={handleGoogleLogin}
-            disabled={isPending} // Désactiver pendant le chargement du login classique
+            disabled={isPending}
             className="flex items-center justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 
             rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 
             bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
@@ -227,7 +274,7 @@ export default function LoginPage() {
           
           <button
             onClick={handleXLogin} 
-            disabled={isPending} // Désactiver pendant le chargement du login classique
+            disabled={isPending}
             className="flex items-center justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 
             rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 
             bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
@@ -235,7 +282,8 @@ export default function LoginPage() {
             transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/8/85/X_logo_2023_%28black%29.svg"
+              // src="https://upload.wikimedia.org/wikipedia/commons/8/85/X_logo_2023_%28black%29.svg"
+              src={'/image/xlogo.jpeg'}
               alt="X (Twitter) logo"
               width={20}
               height={20}

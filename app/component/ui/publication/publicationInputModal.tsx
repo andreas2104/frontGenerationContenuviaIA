@@ -6,6 +6,7 @@ import { usePublications } from '@/hooks/usePublication'
 import { PublicationCreate, StatutPublicationEnum } from '@/types/publication'
 import { Contenu } from '@/types/contenu'
 import { X as CloseIcon, Search, Check, X as XIcon, ChevronLeft } from 'lucide-react'
+import Image from 'next/image'
 
 type FilterType = 'all' | 'image' | 'video' | 'texte'
 
@@ -76,8 +77,9 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(c =>
         c.titre?.toLowerCase().includes(query) ||
-        c.texte?.toLowerCase().includes(query) ||
-        c.hashtags?.toLowerCase().includes(query)
+        c.texte?.toLowerCase().includes(query) 
+        // ||
+        // c.hashtags?.toLowerCase().includes(query)
       )
     }
 
@@ -244,7 +246,9 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
                 <div className="flex items-start gap-2 sm:gap-3">
                   {contenu.image_url ? (
                     <div className="relative flex-shrink-0">
-                      <img
+                      <Image
+                      width={300}
+                      height={300}
                         src={contenu.image_url}
                         alt={contenu.titre}
                         className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg"
@@ -328,7 +332,7 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
               </div>
               <p className="text-gray-600 font-semibold mb-2 text-sm sm:text-base">Sélectionnez un contenu</p>
               <p className="text-gray-400 text-xs sm:text-sm">
-                Choisissez un contenu pour voir l'aperçu
+                Choisissez un contenu pour voir l`aperçu
               </p>
             </div>
           </div>
@@ -362,7 +366,9 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
                   {formData.message}
                 </p>
                 {selectedContenu?.image_url && (
-                  <img
+                  <Image
+                  width={300}
+                  height={300}
                     src={selectedContenu.image_url}
                     alt="Aperçu"
                     className="rounded-lg w-full object-cover max-h-48 sm:max-h-64 border border-gray-200"
@@ -386,7 +392,7 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                     rows={isMobile ? 4 : 5}
                     placeholder="Modifiez votre message..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm text-gray-900"
                     maxLength={280}
                   />
                   <div className="flex justify-between items-center mt-1">
@@ -405,7 +411,9 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
                       Image jointe
                     </label>
                     <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                      <img
+                      <Image
+                      width={300}
+                      height={300}
                         src={selectedContenu.image_url}
                         alt="Aperçu"
                         className="max-h-32 sm:max-h-32 object-contain mx-auto rounded"

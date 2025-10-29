@@ -4,6 +4,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useContenuById, useContenu } from '@/hooks/useContenu';
 import { TailSpin } from 'react-loader-spinner';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { isValidImageUrl } from '@/app/utils/validation';
 
 export default function EditContenuPage() {
   const { id } = useParams();
@@ -96,7 +98,7 @@ export default function EditContenuPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Éditer le contenu #{id}
+            Éditer le contenu 
           </h1>
           <p className="text-gray-600">
             Modifiez les informations de votre contenu
@@ -155,15 +157,27 @@ export default function EditContenuPage() {
                 {formData.image_url && (
                   <div className="mt-4">
                     <p className="text-sm text-gray-600 mb-2">Aperçu :</p>
-                    <img 
+                    {isValidImageUrl(formData.image_url)? (
+
+                      <Image
+                      width={50}
+                      height={50} 
                       src={formData.image_url} 
                       alt={formData.titre || 'Image'} 
                       className="max-w-full h-auto max-h-64 rounded-lg border border-gray-300"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
-                    />
-                  </div>
+                      />
+                    ): (
+                      <div className='border border-yellow-200 rounded-lg p-4 bg-yellow -50'>
+                        <p className='text-sm text-yellow-700 text-center'>
+                          ⚠️ URL d'image invalid
+                        </p>
+                        <p className='text-xs text-gray-500 text-center mt-1 break-all'> {formData.image_url}</p>
+                      </div>
+                    )}
+                      </div>
                 )}
               </div>
             )}
@@ -177,8 +191,8 @@ export default function EditContenuPage() {
                   <span className="capitalize font-medium">{contenu.type_contenu}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>ID :</span>
-                  <span className="font-medium">#{contenu.id}</span>
+                  {/* <span>ID :</span> */}
+                  {/* <span className="font-medium">#{contenu.id}</span> */}
                 </div>
                 <div className="flex justify-between">
                   <span>Créé le :</span>

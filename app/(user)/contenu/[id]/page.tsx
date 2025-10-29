@@ -60,7 +60,7 @@ export default function ContenuDetailPage() {
                 {contenu.titre ?? '(Sans titre)'}
               </h2>
               <div className="text-sm text-gray-500 mb-4 flex flex-wrap gap-4">
-                <span>#{contenu.id}</span>
+                {/* <span>#{contenu.id}</span> */}
                 <span>Créé le : {new Date(contenu.date_creation).toLocaleString()}</span>
                 <span className="capitalize bg-gray-200 px-2 py-1 rounded">
                   {contenu.type_contenu}

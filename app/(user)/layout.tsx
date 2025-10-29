@@ -6,12 +6,13 @@ import { SearchProvider, useSearch } from '../context/searchContext';
 import { useEffect, useState } from 'react';
 import { Search, X, Home, Folder, MessageSquare, Cpu, Layout, Zap, FileText, Users, Shield, Globe, Share, History, LogOut, User2, Menu, ChevronDown, ChevronUp } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
-const Header = () => {
+// 🟡 COMPOSANT HEADER
+const Header = ({ isMobileMenuOpen, toggleMobileMenu }) => {
   const { isAdmin, utilisateur, logout, isLoading } = useUser();
   const { searchQuery, setSearchQuery, clearSearch } = useSearch();
   const [mounted, setMounted] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   useEffect(() => {
@@ -29,10 +30,6 @@ const Header = () => {
     clearSearch();
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
   const toggleSearch = () => {
     setIsSearchExpanded(!isSearchExpanded);
   };
@@ -47,7 +44,7 @@ const Header = () => {
         </div>
       ) : (
         <>
-          {/* Logo et menu hamburger */}
+          {/* 🎯 LOGO ET MENU HAMBURGER AVEC MISE EN EVIDENCE SOBRE */}
           <div className='flex items-center gap-4 flex-1'>
             <button
               onClick={toggleMobileMenu}
@@ -57,10 +54,50 @@ const Header = () => {
               <Menu size={20} />
             </button>
             
-            <h1 className='text-xl lg:text-2xl font-bold min-w-max'>Media Tower</h1>
+            {/* 🟡 CONTAINER LOGO AVEC FOND NEUTRE ET ELEGANT */}
+            <div className='
+              bg-white dark:bg-gray-800
+              rounded-2xl 
+              p-3 
+              shadow-md 
+              border border-gray-200 dark:border-gray-600
+              hover:shadow-lg 
+              hover:border-gray-300 dark:hover:border-gray-500
+              transition-all 
+              duration-300 
+              transform 
+              hover:scale-105
+              group
+              relative
+              overflow-hidden
+            '>
+              {/* Effet de lumière subtile */}
+              <div className='
+                absolute 
+                inset-0 
+                bg-gradient-to-br from-white/50 to-transparent 
+                dark:from-gray-700/30
+                opacity-0 
+                group-hover:opacity-100
+                transition-opacity 
+                duration-300
+              '></div>
+              
+              <Image
+                src={"/image/logs.png"}
+                width={80}
+                height={60}
+                alt='Media Tower Logo'
+                className='relative z-10 transition-transform duration-300 group-hover:scale-110'
+              />
+            </div>
+            
+            {/* <h1 className='text-xl lg:text-2xl font-bold min-w-max text-gray-800 dark:text-white'>
+              Media Tower
+            </h1> */}
           </div>
 
-          {/* Barre de recherche - Desktop */}
+          {/* BARRE DE RECHERCHE - DESKTOP */}
           <form onSubmit={handleSearch} className='hidden lg:block relative flex-1 max-w-2xl mx-4'>
             <div className='relative'>
               <input
@@ -88,7 +125,7 @@ const Header = () => {
             </div>
           </form>
 
-          {/* Barre de recherche - Mobile (expandable) */}
+          {/* BARRE DE RECHERCHE - MOBILE (expandable) */}
           <div className='lg:hidden flex items-center'>
             {!isSearchExpanded ? (
               <button
@@ -130,7 +167,7 @@ const Header = () => {
             )}
           </div>
 
-          {/* User info and logout */}
+          {/* USER INFO AND LOGOUT */}
           {utilisateur && (
             <div className='flex items-center gap-2 lg:gap-4 ml-2 lg:ml-4'>
               <span className='hidden sm:inline text-sm'>
@@ -157,10 +194,10 @@ const Header = () => {
   );
 };
 
-const Sidebar = () => {
+// 🟡 COMPOSANT SIDEBAR
+const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu }) => {
   const pathname = usePathname();
   const { isAdmin } = useUser();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({
     main: true,
     admin: true
@@ -168,12 +205,10 @@ const Sidebar = () => {
 
   useEffect(() => {
     // Fermer le menu mobile quand la route change
-    setIsMobileMenuOpen(false);
+    if (isMobileMenuOpen) {
+      toggleMobileMenu();
+    }
   }, [pathname]);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -198,7 +233,7 @@ const Sidebar = () => {
     }
   };
 
-  // Menu de base pour tous les utilisateurs
+  // MENU DE BASE POUR TOUS LES UTILISATEURS
   const baseMenuItems = [
     { href: '/dashboard', label: 'Home', icon: Home },
     { href: '/projet', label: 'Projet', icon: Folder },
@@ -210,7 +245,7 @@ const Sidebar = () => {
     { href: '/publication', label: 'Publication', icon: Share },
   ];
 
-  // Menu admin seulement
+  // MENU ADMIN SEULEMENT
   const adminMenuItems = [
     { href: '/modelIA', label: 'ModelIA', icon: Cpu },
     { href: '/utilisateurs', label: 'Utilisateur', icon: Users },
@@ -219,7 +254,7 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Overlay pour mobile */}
+      {/* OVERLAY POUR MOBILE */}
       {isMobileMenuOpen && (
         <div 
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
@@ -227,14 +262,14 @@ const Sidebar = () => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* SIDEBAR */}
       <aside className={`
         w-64 bg-white dark:bg-gray-800 p-6 shadow-md fixed left-0 top-16 bottom-0 z-40 overflow-y-auto border-r border-gray-200 dark:border-gray-700
         transform transition-transform duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <nav className="space-y-2">
-          {/* Menu principal avec accordéon sur mobile */}
+          {/* MENU PRINCIPAL AVEC ACCORDÉON SUR MOBILE */}
           <div className="mb-4">
             <button
               onClick={() => toggleSection('main')}
@@ -257,7 +292,7 @@ const Sidebar = () => {
                       <Link
                         href={link.href}
                         className={getLinkClasses(link.href)}
-                        onClick={() => setIsMobileMenuOpen(false)}
+                        onClick={() => toggleMobileMenu()}
                       >
                         <IconComponent 
                           size={20} 
@@ -278,7 +313,7 @@ const Sidebar = () => {
             )}
           </div>
 
-          {/* Section Admin avec accordéon */}
+          {/* SECTION ADMIN AVEC ACCORDÉON */}
           {isAdmin && (
             <div className="my-4 border-t border-gray-200 dark:border-gray-600 pt-4">
               <button
@@ -302,7 +337,7 @@ const Sidebar = () => {
                         <Link
                           href={link.href}
                           className={getLinkClasses(link.href)}
-                          onClick={() => setIsMobileMenuOpen(false)}
+                          onClick={() => toggleMobileMenu()}
                         >
                           <IconComponent 
                             size={20} 
@@ -329,15 +364,29 @@ const Sidebar = () => {
   );
 };
 
+// 🟡 COMPOSANT PRINCIPAL ADMIN LAYOUT
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  // ÉTAT UNIQUE PARTAGÉ ENTRE HEADER ET SIDEBAR
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <UserProvider>
       <SearchProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-          <Header />
-          <Sidebar />
+          <Header 
+            isMobileMenuOpen={isMobileMenuOpen} 
+            toggleMobileMenu={toggleMobileMenu} 
+          />
+          <Sidebar 
+            isMobileMenuOpen={isMobileMenuOpen} 
+            toggleMobileMenu={toggleMobileMenu} 
+          />
           
-          {/* Contenu principal avec marge responsive */}
+          {/* CONTENU PRINCIPAL AVEC MARGE RESPONSIVE */}
           <main className="lg:ml-64 mt-16 p-4 lg:p-6 min-h-screen">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 lg:p-6 min-h-[calc(100vh-8rem)]">
               {children}
