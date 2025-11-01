@@ -6,7 +6,6 @@ export const fetchProjets = async (): Promise<Projet[]> => {
   const data =  await apiClient<Projet[]>("/projets", {
     method: "GET",
   });
-  console.log("all projets:", data);
   return data.sort((a, b) => b.id - a.id);
 };
 

@@ -4,8 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useContenuById, useContenu } from '@/hooks/useContenu';
 import { TailSpin } from 'react-loader-spinner';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { isValidImageUrl } from '@/app/utils/validation';
+import { isValidImageUrlSync, SafeImage } from '@/app/utils/validation';
 
 export default function EditContenuPage() {
   const { id } = useParams();
@@ -69,6 +68,13 @@ export default function EditContenuPage() {
   const handleSave = async () => {
     setIsSaving(true);
     setSaveError(null);
+    
+    // Validation de l'image avant sauvegarde
+    if (contenu.type_contenu === 'image' && formData.image_url && !isValidImageUrlSync(formData.image_url)) {
+      setSaveError('L\'URL de l\'image n\'est pas valide');
+      setIsSaving(false);
+      return;
+    }
     
     try {
       await updateContenu({
@@ -151,33 +157,35 @@ export default function EditContenuPage() {
                   type="text"
                   value={formData.image_url}
                   onChange={e => handleChange('image_url', e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full border rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    formData.image_url && !isValidImageUrlSync(formData.image_url) 
+                      ? 'border-yellow-500' 
+                      : 'border-gray-300'
+                  }`}
                   placeholder="https://exemple.com/image.jpg"
                 />
                 {formData.image_url && (
                   <div className="mt-4">
                     <p className="text-sm text-gray-600 mb-2">Aperçu :</p>
-                    {isValidImageUrl(formData.image_url)? (
-
-                      <Image
-                      width={50}
-                      height={50} 
-                      src={formData.image_url} 
-                      alt={formData.titre || 'Image'} 
-                      className="max-w-full h-auto max-h-64 rounded-lg border border-gray-300"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
+                    {isValidImageUrlSync(formData.image_url) ? (
+                      <SafeImage
+                        src={formData.image_url} 
+                        alt={formData.titre || 'Image'} 
+                        className="max-w-full h-auto max-h-64 rounded-lg border border-gray-300 object-contain"
+                        width={400}
+                        height={300}
                       />
-                    ): (
-                      <div className='border border-yellow-200 rounded-lg p-4 bg-yellow -50'>
+                    ) : (
+                      <div className='border border-yellow-200 rounded-lg p-4 bg-yellow-50'>
                         <p className='text-sm text-yellow-700 text-center'>
-                          ⚠️ URL d'image invalid
+                          ⚠️ URL d'image invalide
                         </p>
-                        <p className='text-xs text-gray-500 text-center mt-1 break-all'> {formData.image_url}</p>
+                        <p className='text-xs text-gray-500 text-center mt-1 break-all'> 
+                          {formData.image_url}
+                        </p>
                       </div>
                     )}
-                      </div>
+                  </div>
                 )}
               </div>
             )}
@@ -191,15 +199,21 @@ export default function EditContenuPage() {
                   <span className="capitalize font-medium">{contenu.type_contenu}</span>
                 </div>
                 <div className="flex justify-between">
-                  {/* <span>ID :</span> */}
-                  {/* <span className="font-medium">#{contenu.id}</span> */}
-                </div>
-                <div className="flex justify-between">
                   <span>Créé le :</span>
                   <span className="font-medium">
                     {new Date(contenu.date_creation).toLocaleString('fr-FR')}
                   </span>
                 </div>
+                {contenu.type_contenu === 'image' && formData.image_url && (
+                  <div className="flex justify-between">
+                    <span>Statut image :</span>
+                    <span className={`font-medium ${
+                      isValidImageUrlSync(formData.image_url) ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {isValidImageUrlSync(formData.image_url) ? '✓ Valide' : '✗ Invalide'}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -221,9 +235,9 @@ export default function EditContenuPage() {
                 
                 <button
                   onClick={handleSave}
-                  disabled={isSaving || !hasChanges}
+                  disabled={isSaving || !hasChanges || (contenu.type_contenu === 'image' && formData.image_url && !isValidImageUrlSync(formData.image_url))}
                   className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                    isSaving || !hasChanges
+                    isSaving || !hasChanges || (contenu.type_contenu === 'image' && formData.image_url && !isValidImageUrlSync(formData.image_url))
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}

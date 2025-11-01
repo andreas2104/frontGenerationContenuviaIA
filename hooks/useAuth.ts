@@ -1,4 +1,4 @@
-import { login, register, AuthResponse, LoginData, RegisterData } from '@/services/authService';
+import { login, register, AuthResponse, LoginData, RegisterData, logout } from '@/services/authService';
 import { fetchCurrentUtilisateur } from '@/services/utilisateurService';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -53,3 +53,20 @@ export const usecurrentUser = () => {
     staleTime: 5 * 60 * 1000, 
   })
 }
+
+export const useLogout = () => {
+  const queryclient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logout,
+    onSuccess: (data) => {
+      console.log(data.message);
+      queryclient.removeQueries({ queryKey: ['currentUtilisateur']});
+      queryclient.removeQueries({ queryKey: ["utilisateurs"]});
+      window.location.href = "/";
+    },
+    onError: (error) => {
+      console.error('Erreur de deconnexion:', error);
+    },
+  });
+};

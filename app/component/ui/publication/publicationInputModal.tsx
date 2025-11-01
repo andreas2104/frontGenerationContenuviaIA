@@ -6,7 +6,7 @@ import { usePublications } from '@/hooks/usePublication'
 import { PublicationCreate, StatutPublicationEnum } from '@/types/publication'
 import { Contenu } from '@/types/contenu'
 import { X as CloseIcon, Search, Check, X as XIcon, ChevronLeft } from 'lucide-react'
-import Image from 'next/image'
+// import { SafeImage, isValidImageUrl } from './utils/imageValidation'
 
 type FilterType = 'all' | 'image' | 'video' | 'texte'
 
@@ -14,6 +14,51 @@ interface PublicationCreationModalProps {
   isOpen: boolean
   onClose: () => void
 }
+
+// ✅ AJOUT : Fonction pour convertir datetime-local (heure locale) en ISO UTC
+const convertToUTC = (localDateString: string): string => {
+  if (!localDateString) return '';
+  
+  // Le datetime-local retourne "2025-11-01T17:19" (heure locale du navigateur)
+  // On crée un objet Date qui l'interprète comme heure locale
+  const localDate = new Date(localDateString);
+  
+  // On le convertit en ISO UTC (ajoute automatiquement le Z)
+  return localDate.toISOString(); // → "2025-11-01T14:19:00.000Z" (si UTC+3)
+}
+
+// Fonction pour valider avant la création de publication
+const validatePublicationData = async (data: PublicationCreate): Promise<{ isValid: boolean; errors: string[] }> => {
+  const errors: string[] = [];
+
+  if (!data.message?.trim()) {
+    errors.push('Le message est requis');
+  }
+
+  if (data.message && data.message.length > 280) {
+    errors.push('Le message ne doit pas dépasser 280 caractères');
+  }
+
+  if (data.image_url) {
+    const isValidImage = await isValidImageUrl(data.image_url);
+    if (!isValidImage) {
+      errors.push('L\'URL de l\'image n\'est pas valide');
+    }
+  }
+
+  if (data.date_programmee) {
+    const scheduledDate = new Date(data.date_programmee);
+    const now = new Date();
+    if (scheduledDate <= now) {
+      errors.push('La date programmée doit être dans le futur');
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
 
 export default function PublicationCreationModal({ isOpen, onClose }: PublicationCreationModalProps) {
   const { contenus, isPending: isLoadingContenus } = useContenu()
@@ -78,8 +123,6 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
       filtered = filtered.filter(c =>
         c.titre?.toLowerCase().includes(query) ||
         c.texte?.toLowerCase().includes(query) 
-        // ||
-        // c.hashtags?.toLowerCase().includes(query)
       )
     }
 
@@ -112,6 +155,7 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
     setCurrentView('selection')
   }
 
+  // ✅ MODIFICATION : handleSubmit avec conversion UTC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -126,12 +170,29 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
         message: formData.message,
         titre_publication: selectedContenu.titre || `Publication X - ${new Date().toLocaleDateString()}`,
         image_url: selectedContenu.image_url,
+        plateforme: 'x',
         statut: publicationImmediate
           ? StatutPublicationEnum.publie
           : formData.date_programmee
           ? StatutPublicationEnum.programme
           : StatutPublicationEnum.brouillon,
-        date_programmee: publicationImmediate ? undefined : (formData.date_programmee || undefined),
+        // ✅ CONVERSION EN UTC AVANT ENVOI
+        date_programmee: publicationImmediate 
+          ? undefined 
+          : formData.date_programmee 
+            ? convertToUTC(formData.date_programmee) 
+            : undefined,
+      }
+
+      // ✅ Log pour debug (à retirer en production)
+      console.log('📅 Date locale saisie:', formData.date_programmee)
+      console.log('📅 Date UTC envoyée:', publicationData.date_programmee)
+
+      // Validation avant soumission
+      const validation = await validatePublicationData(publicationData);
+      if (!validation.isValid) {
+        showNotification(`❌ Erreur: ${validation.errors.join(', ')}`, 'error');
+        return;
       }
 
       await actions.creer(publicationData)
@@ -246,9 +307,14 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
                 <div className="flex items-start gap-2 sm:gap-3">
                   {contenu.image_url ? (
                     <div className="relative flex-shrink-0">
-                      <Image
-                      width={300}
-                      height={300}
+                      {/* <SafeImage
+                        src={contenu.image_url}
+                        alt={contenu.titre}
+                        className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg"
+                        width={64}
+                        height={64}
+                      /> */}
+                      <img
                         src={contenu.image_url}
                         alt={contenu.titre}
                         className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg"
@@ -332,7 +398,7 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
               </div>
               <p className="text-gray-600 font-semibold mb-2 text-sm sm:text-base">Sélectionnez un contenu</p>
               <p className="text-gray-400 text-xs sm:text-sm">
-                Choisissez un contenu pour voir l`aperçu
+                Choisissez un contenu pour voir l&apos;aperçu
               </p>
             </div>
           </div>
@@ -366,9 +432,7 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
                   {formData.message}
                 </p>
                 {selectedContenu?.image_url && (
-                  <Image
-                  width={300}
-                  height={300}
+                  <img
                     src={selectedContenu.image_url}
                     alt="Aperçu"
                     className="rounded-lg w-full object-cover max-h-48 sm:max-h-64 border border-gray-200"
@@ -411,9 +475,7 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
                       Image jointe
                     </label>
                     <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                      <Image
-                      width={300}
-                      height={300}
+                      <img
                         src={selectedContenu.image_url}
                         alt="Aperçu"
                         className="max-h-32 sm:max-h-32 object-contain mx-auto rounded"
@@ -455,11 +517,33 @@ export default function PublicationCreationModal({ isOpen, onClose }: Publicatio
                     value={formData.date_programmee}
                     onChange={(e) => setFormData(prev => ({ ...prev, date_programmee: e.target.value }))}
                     min={minDateTime}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-700"
                   />
                   <p className="text-xs text-gray-500 mt-1 italic">
                     💡 Laissez vide pour créer un brouillon
                   </p>
+                  
+                  {/* ✅ AJOUT : Aperçu de l'heure UTC */}
+                  {formData.date_programmee && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-xs text-blue-800 font-medium">
+                        🌍 Publication prévue à :
+                      </p>
+                      <p className="text-xs text-blue-600 font-semibold mt-0.5">
+                        {new Date(formData.date_programmee).toLocaleString('fr-FR', {
+                          dateStyle: 'full',
+                          timeStyle: 'short'
+                        })} (votre heure locale)
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        = {new Date(convertToUTC(formData.date_programmee)).toLocaleString('fr-FR', {
+                          dateStyle: 'full',
+                          timeStyle: 'short',
+                          timeZone: 'UTC'
+                        })} UTC
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 

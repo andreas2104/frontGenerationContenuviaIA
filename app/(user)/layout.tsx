@@ -44,7 +44,7 @@ const Header = ({ isMobileMenuOpen, toggleMobileMenu }) => {
         </div>
       ) : (
         <>
-          {/* 🎯 LOGO ET MENU HAMBURGER AVEC MISE EN EVIDENCE SOBRE */}
+          {/*  LOGO ET MENU HAMBURGER AVEC MISE EN EVIDENCE SOBRE */}
           <div className='flex items-center gap-4 flex-1'>
             <button
               onClick={toggleMobileMenu}
@@ -54,7 +54,7 @@ const Header = ({ isMobileMenuOpen, toggleMobileMenu }) => {
               <Menu size={20} />
             </button>
             
-            {/* 🟡 CONTAINER LOGO AVEC FOND NEUTRE ET ELEGANT */}
+            {/* CONTAINER LOGO AVEC FOND NEUTRE ET ELEGANT */}
             <div className='
               bg-white dark:bg-gray-800
               rounded-2xl 
@@ -194,7 +194,7 @@ const Header = ({ isMobileMenuOpen, toggleMobileMenu }) => {
   );
 };
 
-// 🟡 COMPOSANT SIDEBAR
+//  COMPOSANT SIDEBAR
 const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu }) => {
   const pathname = usePathname();
   const { isAdmin } = useUser();
@@ -241,7 +241,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu }) => {
     { href: '/template', label: 'Template', icon: Layout },
     { href: '/generer', label: 'Generer', icon: Zap },
     { href: '/contenu', label: 'Contenu', icon: FileText },
-    { href: '/plateforme', label: 'Plateforme', icon: Globe },
+    // { href: '/plateforme', label: 'Plateforme', icon: Globe },
     { href: '/publication', label: 'Publication', icon: Share },
   ];
 
@@ -249,7 +249,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu }) => {
   const adminMenuItems = [
     { href: '/modelIA', label: 'ModelIA', icon: Cpu },
     { href: '/utilisateurs', label: 'Utilisateur', icon: Users },
-    { href: '/adminPlateforme', label: 'AdminPlateforme', icon: Shield },
+    // { href: '/adminPlateforme', label: 'AdminPlateforme', icon: Shield },
   ];
 
   return (

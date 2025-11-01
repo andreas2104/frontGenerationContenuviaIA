@@ -2,7 +2,8 @@ export enum StatutPublicationEnum {
   brouillon = 'brouillon',
   programme = 'programme',
   publie = 'publie',
-  echec = 'echec'  
+  echec = 'echec',
+  supprime = 'supprime'
 }
 
 export interface Publication {
@@ -20,6 +21,13 @@ export interface Publication {
   id_externe: string | null;
   message_erreur: string | null;
   parametres_publication: Record<string, any>;
+  nombre_vues?: number;
+  nombre_likes?: number;
+  nombre_partages?: number;
+  contenu?: {
+    texte?: string | null;
+    image_url?: string | null;
+  };
 }
 
 export interface PublicationCreate {
