@@ -10,9 +10,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { PublicationCreate, StatutPublicationEnum, Publication } from '@/types/publication';
 import { useSearch } from '@/app/context/searchContext';
 import { X as CloseIcon, Check, X as XIcon, Eye, Edit3, Calendar, Send } from 'lucide-react';
-import Image from 'next/image';
-import { isValidImageUrl } from '@/app/utils/validation';
-
+import { isValidImageUrlSync, SafeImage } from '@/app/utils/validation';
 
 interface PublicationCreationModalProps {
   isOpen: boolean
@@ -90,6 +88,12 @@ function PublicationCreationModal({
 
     if (!formData.plateforme) {
       showNotification('Veuillez sélectionner une plateforme', 'error')
+      return
+    }
+
+    // Validation de l'image avant soumission
+    if (contenuImageUrl && !isValidImageUrlSync(contenuImageUrl)) {
+      showNotification('L\'URL de l\'image n\'est pas valide', 'error')
       return
     }
 
@@ -300,26 +304,25 @@ function PublicationCreationModal({
                       <label className="block text-xs font-bold text-gray-700 mb-1.5">
                         Image incluse
                       </label>
-                      {isValidImageUrl(contenuImageUrl)? (
-
+                      {isValidImageUrlSync(contenuImageUrl) ? (
                         <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                        <Image
-                          src={contenuImageUrl} 
-                          height={300}
-                          width={300}
-                          alt="Aperçu" 
-                          className="max-h-32 object-contain mx-auto rounded"
+                          <SafeImage
+                            src={contenuImageUrl} 
+                            alt="Aperçu" 
+                            className="max-h-32 object-contain mx-auto rounded"
+                            width={300}
+                            height={200}
                           />
-                        <p className="text-xs text-gray-500 text-center mt-2">
-                          Cette image sera jointe à la publication
-                        </p>
-                      </div>
-                        ): (
-                          <div className='border border-yellow-200 rounded-lg p-3 bg-yellow-50'>
-                            <p className='text-sm text-yellow-700 text-center'>⚠️ Url d'image invalid</p>
-                            <p>{contenuImageUrl}</p>
-                          </div>
-                        )}
+                          <p className="text-xs text-gray-500 text-center mt-2">
+                            Cette image sera jointe à la publication
+                          </p>
+                        </div>
+                      ) : (
+                        <div className='border border-yellow-200 rounded-lg p-3 bg-yellow-50'>
+                          <p className='text-sm text-yellow-700 text-center'>⚠️ URL d'image invalide</p>
+                          <p className="text-xs text-yellow-600 text-center truncate">{contenuImageUrl}</p>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -419,13 +422,13 @@ function PublicationCreationModal({
                       {formData.message || 'Votre message apparaîtra ici...'}
                     </p>
                     
-                    {contenuImageUrl && (
-                      <Image
+                    {contenuImageUrl && isValidImageUrlSync(contenuImageUrl) && (
+                      <SafeImage
                         src={contenuImageUrl}
-                        width={300}
-                        height={300}
                         alt="Aperçu"
                         className="rounded-lg w-full object-cover max-h-48 border border-gray-200"
+                        width={400}
+                        height={200}
                       />
                     )}
                     
@@ -468,7 +471,11 @@ function PublicationCreationModal({
                       {contenuImageUrl && (
                         <div className="flex justify-between">
                           <span>Image:</span>
-                          <span className="font-medium text-green-600">✓ Incluse</span>
+                          <span className={`font-medium ${
+                            isValidImageUrlSync(contenuImageUrl) ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {isValidImageUrlSync(contenuImageUrl) ? '✓ Incluse' : '✗ Invalide'}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -492,7 +499,7 @@ function PublicationCreationModal({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={etatsChargement.isCreating || !formData.message || !formData.titre_publication}
+            disabled={etatsChargement.isCreating || !formData.message || !formData.titre_publication || (contenuImageUrl && !isValidImageUrlSync(contenuImageUrl))}
             className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all font-bold flex items-center justify-center text-sm order-1 sm:order-2"
           >
             {etatsChargement.isCreating ? (
@@ -645,13 +652,13 @@ function ContenuCard({ contenu, onDelete, searchQuery, publicationCount, recentP
             </p>
           )}
           {contenu.type_contenu === 'image' && contenu.image_url && 
-          isValidImageUrl(contenu.image_url) && (
-            <Image
-              width={50}
-              height={50} 
+          isValidImageUrlSync(contenu.image_url) && (
+            <SafeImage
               src={contenu.image_url} 
               alt={contenu.titre ?? ''} 
               className="mt-2 rounded-lg max-h-48 w-full object-cover hover:opacity-90 transition-opacity border border-gray-200"
+              width={400}
+              height={200}
             />
           )}
           {contenu.type_contenu === 'multimodal' && contenu.contenu_structure && (
@@ -664,46 +671,46 @@ function ContenuCard({ contenu, onDelete, searchQuery, publicationCount, recentP
           )}
         </div>
       </Link>
-          {/* a regler   */}
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200 gap-2">
-          {/* Lien Voir */}
-          <Link
-            href={`/contenu/${contenu.id}`}
-            className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center flex-shrink-0 min-w-0"
+          
+      <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200 gap-2">
+        {/* Lien Voir */}
+        <Link
+          href={`/contenu/${contenu.id}`}
+          className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center flex-shrink-0 min-w-0"
+        >
+          <Eye className="w-3 h-3 mr-1 flex-shrink-0" />
+          <span className="truncate">Voir</span>
+        </Link>
+
+        {/* Groupe de boutons */}
+        <div className="flex items-center gap-1 flex-shrink-0 min-w-0">
+          <button
+            onClick={() => setIsPublicationModalOpen(true)}
+            className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center bg-green-50 px-2 py-1 rounded hover:bg-green-100 transition-colors flex-shrink-0"
+            title="Publier"
           >
-            <Eye className="w-3 h-3 mr-1 flex-shrink-0" />
-            <span className="truncate">Voir</span>
+            <Send className="w-3 h-3" />
+          </button>
+
+          <Link
+            href={`/generer/${contenu.id}`}
+            className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center p-1 rounded hover:bg-blue-50 transition-colors flex-shrink-0"
+            title="Éditer"
+          >
+            <Edit3 className="w-3 h-3" />
           </Link>
 
-          {/* Groupe de boutons */}
-          <div className="flex items-center gap-1 flex-shrink-0 min-w-0">
-            <button
-              onClick={() => setIsPublicationModalOpen(true)}
-              className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center bg-green-50 px-2 py-1 rounded hover:bg-green-100 transition-colors flex-shrink-0"
-              title="Publier"
-            >
-              <Send className="w-3 h-3" />
-            </button>
-
-            <Link
-              href={`/generer/${contenu.id}`}
-              className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center p-1 rounded hover:bg-blue-50 transition-colors flex-shrink-0"
-              title="Éditer"
-            >
-              <Edit3 className="w-3 h-3" />
-            </Link>
-
-            <button
-              className="text-red-600 hover:text-red-800 font-medium text-sm flex items-center p-1 rounded hover:bg-red-50 transition-colors flex-shrink-0"
-              onClick={onDelete}
-              title="Supprimer"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </div>
+          <button
+            className="text-red-600 hover:text-red-800 font-medium text-sm flex items-center p-1 rounded hover:bg-red-50 transition-colors flex-shrink-0"
+            onClick={onDelete}
+            title="Supprimer"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
         </div>
+      </div>
 
       {/* Nouveau Modal de publication */}
       <PublicationCreationModal

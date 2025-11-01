@@ -5,52 +5,41 @@ import {
   fetchUtilisateurs,
   updateUtilisateur,
   deleteUtilisateur,
-  logoutUtilisateur,
 } from "@/services/utilisateurService";
+import { logout } from "@/services/authService"; // Import depuis authService
+import { useEffect } from "react";
 
-
-// const useAuth = () => {
-//   console.log("useAuth")
-//   const user =
-//     typeof window !== "undefined" ? .getItem("user") : null;
-
-//   const logout = () => {
-//     if (typeof window !== "undefined") {
-//       localStorage.removeItem("user");
-//       window.location.href = "/";
-//     }
-//   };
-
-
-//   console.log("USER", user)
-
-//   return {
-//     user: user ? JSON.parse(user) : null,
-//     isAuthenticated: !!user,
-//     logout,
-//   };
-// };
-
+/**
+ * Hook pour la déconnexion unifié
+ */
 export const useLogout = () => {
-  const queryclient = useQueryClient();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: logoutUtilisateur,
+    mutationFn: logout, // Utilise la fonction unifiée de authService
     onSuccess: (data) => {
       console.log(data.message);
-      queryclient.removeQueries({ queryKey: ['currentUtilisateur']});
-      queryclient.removeQueries({ queryKey: ["utilisateurs"]});
-      window.location.href = "/";
+      // Nettoyer tout le cache
+      queryClient.clear();
+      queryClient.removeQueries({ queryKey: ['currentUtilisateur'] });
+      queryClient.removeQueries({ queryKey: ["utilisateurs"] });
+      // Redirection
+      window.location.href = "/login";
     },
     onError: (error) => {
-      console.error('Erreur de deconnexion:', error);
+      console.error('Erreur de déconnexion:', error);
+      // Même en cas d'erreur, on nettoie le cache local
+      queryClient.clear();
+      queryClient.removeQueries({ queryKey: ['currentUtilisateur'] });
+      queryClient.removeQueries({ queryKey: ["utilisateurs"] });
+      window.location.href = "/login";
     },
   });
 };
 
 export const useCurrentUtilisateur = () => {
-  // const { token, isAuthenticated, logout } = useAuth();
-  const {mutate: logout} = useLogout();
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
+  
   const {
     data: utilisateur,
     isLoading,
@@ -59,33 +48,34 @@ export const useCurrentUtilisateur = () => {
   } = useQuery({
     queryKey: ["currentUtilisateur"],
     queryFn: fetchCurrentUtilisateur, 
-    // enabled: isAuthenticated,
     retry: false,
     refetchOnWindowFocus: false,
   });
 
   const isAdmin = utilisateur?.type_compte === "admin";
-  if (error && !isLoading) {
-    logout()
-  }
 
-  // Déconnexion auto si erreur d'auth
-  // if (error && !isLoading && isAuthenticated) {
-  //   console.error("Erreur utilisateur, déconnexion automatique");
-  //   logout();
-  // }
+  // Déconnexion auto si erreur d'authentification
+    useEffect(() => {
+    if (error && !isLoading) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // Se déconnecter seulement pour les erreurs d'authentification
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        console.error("Erreur d'authentification, déconnexion automatique");
+        logout();
+      }
+    }
+  }, [error, isLoading, logout]);
 
   return {
     utilisateur,
     isAdmin,
-    isLoading,
-    // isAuthenticated,
+    isLoading: isLoading || isLoggingOut,
     error,
     logout,
     refetch,
   };
 };
-
 
 export const useUtilisateurs = () => {
   const queryClient = useQueryClient();
@@ -102,13 +92,14 @@ export const useUtilisateurs = () => {
     refetchOnWindowFocus: false,
   });
 
-
   const updateMutation = useMutation({
     mutationFn: (utilisateur: Partial<Utilisateur>) => {
       return updateUtilisateur(utilisateur);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["utilisateurs"] });
+      // Invalider aussi le current utilisateur si on modifie le profil courant
+      queryClient.invalidateQueries({ queryKey: ["currentUtilisateur"] });
     },
   });
 

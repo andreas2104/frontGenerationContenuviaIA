@@ -9,12 +9,6 @@ export const fetchCurrentUtilisateur = async (): Promise<Utilisateur | null> => 
   return response.utilisateur || null;
 };
 
-// this is for an object array 
-// export const fetchUtilisateurs = async (): Promise<Utilisateur[]> => {
-//   const response = await apiClient<{ utilisateurs: Utilisateur[] }>("/utilisateurs", {
-//   });
-//   return response.utilisateurs || [];
-// };
 
 export const fetchUtilisateurs = async (): Promise<Utilisateur[]> => {
   return apiClient<Utilisateur[]>(`/utilisateurs`, {
@@ -35,9 +29,3 @@ export const deleteUtilisateur = async (id: number): Promise<any> => {
   });
 };
 
-export const logoutUtilisateur = async (): Promise<{message: string}> => {
-  return apiClient<{message: string}>(`/auth/logout`, {
-    method: 'POST',
-    credentials: 'include'
-  })
-}

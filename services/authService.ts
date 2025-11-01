@@ -19,7 +19,11 @@ export interface RegisterData {
   mot_de_passe: string;
 }
 
+export interface LogoutResponse {
+  message: string;
+}
 
+// Opérations d'authentification
 export const login = async (data: LoginData): Promise<AuthResponse> => {
   return await apiClient<AuthResponse>(`${AUTH_ENDPOINT}/login`, {
     method: "POST",
@@ -36,8 +40,9 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
   });
 };
 
-export const logout = async (): Promise<void> => {
-  await apiClient(`${AUTH_ENDPOINT}/logout`, {
+// DÉCONNEXION UNIFIÉE - seule fonction de logout
+export const logout = async (): Promise<LogoutResponse> => {
+  return await apiClient<LogoutResponse>(`${AUTH_ENDPOINT}/logout`, {
     method: "POST",
     credentials: "include",
   });
@@ -47,7 +52,6 @@ export const fetchCurrentUtilisateur = async (): Promise<any> => {
   const response = await apiClient<{ utilisateur: any }>(`${AUTH_ENDPOINT}/me`, {
     credentials: "include",
   });
-
   return response.utilisateur;
 };
 
@@ -62,12 +66,6 @@ export const isAuthenticated = async (): Promise<boolean> => {
   }
 };
 
-export const logoutUtilisateur = async (): Promise<{message: string}> => {
-  return apiClient<{message: string}>(`/auth/logout`, {
-    method: 'POST',
-    credentials: 'include'
-  })
-}
 /**
  * Connexion Google (redirection OAuth)
  */

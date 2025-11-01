@@ -26,7 +26,9 @@ export const usePublications = () => {
   } = useQuery({
     queryKey: ['publications'],
     queryFn: fetchAllPublications,
-    refetchOnWindowFocus: false,
+    // Rafraîchir périodiquement pour récupérer les métriques mises à jour côté backend
+    refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000,
   });
 
   const { publicationsFiltrees, statistiques, prochainesPublications } = React.useMemo(() => {
@@ -36,6 +38,7 @@ export const usePublications = () => {
     const programmees = publications.filter(p => p.statut === StatutPublicationEnum.programme);
     const publiees = publications.filter(p => p.statut === StatutPublicationEnum.publie);
     const enEchec = publications.filter(p => p.statut === StatutPublicationEnum.echec);
+    const annuler = publications.filter(p => p.statut === StatutPublicationEnum.supprime);
 
     const prochaines = programmees.filter(p => {
       if (!p.date_programmee) return false;
@@ -52,6 +55,7 @@ export const usePublications = () => {
         programmees,
         publiees,
         enEchec,
+        annuler,
         toutes: publications,
       },
       statistiques: {
@@ -60,6 +64,7 @@ export const usePublications = () => {
         programmees: programmees.length,
         publiees: publiees.length,
         enEchec: enEchec.length,
+        annuler: annuler.length,
         prochaines: prochaines.length,
       },
       prochainesPublications: prochaines,
@@ -160,6 +165,7 @@ export const usePublicationStats = () => {
       [StatutPublicationEnum.programme]: publications.filter(p => p.statut === StatutPublicationEnum.programme).length,
       [StatutPublicationEnum.publie]: publications.filter(p => p.statut === StatutPublicationEnum.publie).length,
       [StatutPublicationEnum.echec]: publications.filter(p => p.statut === StatutPublicationEnum.echec).length,
+      [StatutPublicationEnum.supprime]: publications.filter(p => p.statut === StatutPublicationEnum.supprime).length,
     },
 
     parPlateforme: publications.reduce((acc, pub) => {

@@ -3,9 +3,10 @@ import { apiClient } from "./clientService";
 
 export const fetchAllPublications = async (): Promise<Publication[]> => {
   console.log('Récupération des publications.');
-  return apiClient<Publication[]>('/publications', {
+  const publication = await apiClient<Publication[]>('/publications', {
     method: 'GET',
   });
+  return publication.sort((a, b) => b.id - a.id);
 };
 
 export const fetchPublicationById = async (publicationId: number): Promise<Publication> => {
@@ -64,10 +65,6 @@ export const getPublicationStats = async (): Promise<StatsResponse> => {
 };
 
 
-
-
-
-
 export const publishNow = async (publicationId: number): Promise<{ message: string }> => {
   console.log(`Publication immédiate Id: ${publicationId}`);
   return apiClient<{ message: string }>(`/publications/${publicationId}/publish`, {
@@ -78,7 +75,7 @@ export const publishNow = async (publicationId: number): Promise<{ message: stri
 
 export const cancelPublication = async (publicationId: number): Promise<{ message: string }> => {
   console.log(`Annulation de la publication ID: ${publicationId}`);
-  return apiClient<{ message: string }>(`/publications/${publicationId}/cancel`, {
+  return apiClient<{ message: string }>(`/publications/${publicationId}/annuler`, {
     method: 'POST',
   });
 };

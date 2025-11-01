@@ -9,9 +9,10 @@ import {
   usePublicationStats,
   usePublicationsAttention,
 } from '@/hooks/usePublication'; 
-import { Loader2, Plus, AlertTriangle, Clock, BarChart, Eye, Heart, Share2, ExternalLink, Pencil, Trash2, Send } from 'lucide-react';
+import { Loader2, Plus, AlertTriangle, Clock, BarChart, Eye, Heart, Share2, ExternalLink, Pencil, Trash2, Send, XCircle } from 'lucide-react';
 import { StatutPublicationEnum, Publication } from '@/types/publication';
 import PublicationInputModal from './publicationInputModal';
+import { cancelPublication } from '@/services/publicationService';
 
 interface SimpleCardProps {
   title?: string | React.ReactNode;
@@ -146,6 +147,19 @@ export default function PublicationDashboard() {
     }
   };
 
+  const handleCancel = async (id: number) => {
+    if (window.confirm('Voulez-vous annuler cette publication programmée ?')) {
+      try {
+        await cancelPublication(id);
+        await refetch();
+        alert('✅ Publication annulée avec succès.');
+      } catch (e) {
+        console.error('Erreur annulation:', e);
+        alert('❌ Erreur lors de l\'annulation.');
+      }
+    }
+  };
+
   const getStatusBadge = (statut: StatutPublicationEnum) => {
     let color = 'bg-gray-200 text-gray-800';
     let text = 'Inconnu';
@@ -162,6 +176,14 @@ export default function PublicationDashboard() {
       case StatutPublicationEnum.publie:
         color = 'bg-green-100 text-green-800';
         text = 'Publié';
+        break;
+      case StatutPublicationEnum.supprime:
+        color = 'bg-red-100 text-red-800';
+        text = 'Annuler';
+        break;
+      case StatutPublicationEnum.supprime:
+        color = 'bg-red-100 text-red-800';
+        text = 'Annulée';
         break;
       case StatutPublicationEnum.echec:
         color = 'bg-red-100 text-red-800';
@@ -403,7 +425,7 @@ export default function PublicationDashboard() {
                               <span className="bg-gray-100 px-2 py-1 rounded font-medium">
                                 {pub.plateforme.toUpperCase()}
                               </span>
-                              <span>Contenu #{pub.id_contenu}</span>
+                              {/* <span>Contenu #{pub.id_contenu}</span> */}
                             </div>
                             {pub.message_erreur && (
                               <p className="text-xs text-red-600 mt-1 truncate">
@@ -503,6 +525,16 @@ export default function PublicationDashboard() {
                               disabled={etatsChargement.isMutating}
                             >
                               <Clock className="h-4 w-4" />
+                            </button>
+                          )}
+                          {pub.statut === StatutPublicationEnum.programme && (
+                            <button
+                              onClick={() => handleCancel(pub.id)}
+                              className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                              title="Annuler la programmation"
+                              disabled={etatsChargement.isMutating}
+                            >
+                              <XCircle className="h-4 w-4" />
                             </button>
                           )}
                           
