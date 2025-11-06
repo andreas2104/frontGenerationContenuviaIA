@@ -1,18 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
 
 import {
   usePublications,
   usePublicationStats,
   usePublicationsAttention,
 } from '@/hooks/usePublication'; 
-import { Loader2, Plus, AlertTriangle, Clock, BarChart, Eye, Heart, Share2, ExternalLink, Pencil, Trash2, Send, XCircle } from 'lucide-react';
+import { Loader2, Plus, AlertTriangle, Clock, BarChart, Eye, Heart, Share2, ExternalLink, Pencil, Trash2, Send, XCircle, CheckCircle, X } from 'lucide-react';
 import { StatutPublicationEnum, Publication } from '@/types/publication';
 import PublicationInputModal from './publicationInputModal';
+import PublicationStatView from './publicationStatView';
 import { cancelPublication } from '@/services/publicationService';
+import Image from 'next/image';
 
 interface SimpleCardProps {
   title?: string | React.ReactNode;
@@ -61,24 +62,133 @@ const SimpleBadge: React.FC<{ children: React.ReactNode; className: string }> = 
   </span>
 );
 
-interface StatCardProps {
-  title: string;
-  value: number | string;
-  icon: React.ReactNode;
-  color: string;
+// Composant de notification
+interface NotificationProps {
+  id: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  message: string;
+  onClose: (id: string) => void;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => (
-  <div className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-    <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <p className="text-sm font-medium text-gray-500">{title}</p>
-      <div className={`text-${color}-500`}>{icon}</div>
+const Notification: React.FC<NotificationProps> = ({ id, type, message, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose(id);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [id, onClose]);
+
+  const colors = {
+    success: 'bg-green-50 border-green-200 text-green-800',
+    error: 'bg-red-50 border-red-200 text-red-800',
+    info: 'bg-blue-50 border-blue-200 text-blue-800',
+    warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+  };
+
+  const icons = {
+    success: <CheckCircle className="h-5 w-5 text-green-600" />,
+    error: <AlertTriangle className="h-5 w-5 text-red-600" />,
+    info: <BarChart className="h-5 w-5 text-blue-600" />,
+    warning: <Clock className="h-5 w-5 text-yellow-600" />,
+  };
+
+  return (
+    <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 shadow-lg ${colors[type]} animate-slide-in`}>
+      <div className="flex-shrink-0">
+        {icons[type]}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium">{message}</p>
+      </div>
+      <button
+        onClick={() => onClose(id)}
+        className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </div>
-    <div className="pt-1">
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
+  );
+};
+
+// Container de notifications
+interface NotificationItem {
+  id: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  message: string;
+}
+
+const NotificationContainer: React.FC<{ notifications: NotificationItem[]; onClose: (id: string) => void }> = ({ notifications, onClose }) => {
+  return (
+    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-md">
+      {notifications.map((notification) => (
+        <Notification
+          key={notification.id}
+          id={notification.id}
+          type={notification.type}
+          message={notification.message}
+          onClose={onClose}
+        />
+      ))}
     </div>
-  </div>
-);
+  );
+};
+
+// Modal de confirmation
+interface ConfirmModalProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmText?: string;
+  cancelText?: string;
+  type?: 'danger' | 'warning' | 'info';
+}
+
+const ConfirmModal: React.FC<ConfirmModalProps> = ({
+  isOpen,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmText = 'Confirmer',
+  cancelText = 'Annuler',
+  type = 'danger'
+}) => {
+  if (!isOpen) return null;
+
+  const colors = {
+    danger: 'bg-red-600 hover:bg-red-700',
+    warning: 'bg-yellow-600 hover:bg-yellow-700',
+    info: 'bg-blue-600 hover:bg-blue-700',
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-scale-in">
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+          <p className="text-gray-600 mb-6">{message}</p>
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={onConfirm}
+              className={`px-4 py-2 text-white rounded-lg transition-colors font-medium ${colors[type]}`}
+            >
+              {confirmText}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function PublicationDashboard() {
   const router = useRouter();
@@ -95,69 +205,125 @@ export default function PublicationDashboard() {
   } = usePublications();
   const { stats } = usePublicationStats();
   const { publicationsAttention } = usePublicationsAttention();
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'danger'
+  });
+
+  // Fonction pour ajouter une notification
+  const addNotification = (type: 'success' | 'error' | 'info' | 'warning', message: string) => {
+    const id = `notification-${Date.now()}-${Math.random()}`;
+    setNotifications((prev) => [...prev, { id, type, message }]);
+  };
+
+  // Fonction pour fermer une notification
+  const closeNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+  };
+
+  // Fonction pour afficher le modal de confirmation
+  const showConfirmModal = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    type: 'danger' | 'warning' | 'info' = 'danger'
+  ) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      onConfirm: () => {
+        onConfirm();
+        setConfirmModal({ ...confirmModal, isOpen: false });
+      },
+      type
+    });
+  };
 
   const handleCreateNew = () => {
-    setIsModalOpen(true)
-  }
+    setIsModalOpen(true);
+  };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false)
-  }
-
-
-
+    setIsModalOpen(false);
+  };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Voulez-vous vraiment supprimer cette publication ?')) {
-      try {
-        await actions.supprimer(id);
-        alert('✅ Publication supprimée avec succès.');
-      } catch (e) {
-        console.error('Erreur suppression:', e);
-        alert('❌ Erreur lors de la suppression.');
-      }
-    }
+    showConfirmModal(
+      'Confirmer la suppression',
+      'Voulez-vous vraiment supprimer cette publication ? Cette action est irréversible.',
+      async () => {
+        try {
+          await actions.supprimer(id);
+          addNotification('success', '✅ Publication supprimée avec succès.');
+        } catch (e) {
+          console.error('Erreur suppression:', e);
+          addNotification('error', '❌ Erreur lors de la suppression.');
+        }
+      },
+      'danger'
+    );
   };
 
   const handlePublishNow = async (pub: Publication) => {
-    if (window.confirm('Voulez-vous publier cette publication immédiatement ?')) {
-      try {
-        await actions.modifier(pub.id, {
-          statut: StatutPublicationEnum.publie 
-        });
-        alert('✅ Publication lancée avec succès.');
-      } catch (e) {
-        console.error('Erreur publication:', e);
-        alert('❌ Erreur lors de la publication.');
-      }
-    }
+    showConfirmModal(
+      'Publier maintenant',
+      'Voulez-vous publier cette publication immédiatement ?',
+      async () => {
+        try {
+          await actions.modifier(pub.id, {
+            statut: StatutPublicationEnum.publie 
+          });
+          addNotification('success', '✅ Publication lancée avec succès.');
+        } catch (e) {
+          console.error('Erreur publication:', e);
+          addNotification('error', '❌ Erreur lors de la publication.');
+        }
+      },
+      'info'
+    );
   };
 
   const handleSchedule = async (pub: Publication, dateProgrammee: string) => {
     try {
       await actions.modifier(pub.id, {
-        statut: StatutPublicationEnum.programme ,
+        statut: StatutPublicationEnum.programme,
         date_programmee: dateProgrammee
       });
-      alert('✅ Publication programmée avec succès.');
+      addNotification('success', '✅ Publication programmée avec succès.');
     } catch (e) {
       console.error('Erreur programmation:', e);
-      alert('❌ Erreur lors de la programmation.');
+      addNotification('error', '❌ Erreur lors de la programmation.');
     }
   };
 
   const handleCancel = async (id: number) => {
-    if (window.confirm('Voulez-vous annuler cette publication programmée ?')) {
-      try {
-        await cancelPublication(id);
-        await refetch();
-        alert('✅ Publication annulée avec succès.');
-      } catch (e) {
-        console.error('Erreur annulation:', e);
-        alert('❌ Erreur lors de l\'annulation.');
-      }
-    }
+    showConfirmModal(
+      'Annuler la programmation',
+      'Voulez-vous annuler cette publication programmée ?',
+      async () => {
+        try {
+          await cancelPublication(id);
+          await refetch();
+          addNotification('success', '✅ Publication annulée avec succès.');
+        } catch (e) {
+          console.error('Erreur annulation:', e);
+          addNotification('error', '❌ Erreur lors de l\'annulation.');
+        }
+      },
+      'warning'
+    );
   };
 
   const getStatusBadge = (statut: StatutPublicationEnum) => {
@@ -176,10 +342,6 @@ export default function PublicationDashboard() {
       case StatutPublicationEnum.publie:
         color = 'bg-green-100 text-green-800';
         text = 'Publié';
-        break;
-      case StatutPublicationEnum.supprime:
-        color = 'bg-red-100 text-red-800';
-        text = 'Annuler';
         break;
       case StatutPublicationEnum.supprime:
         color = 'bg-red-100 text-red-800';
@@ -235,6 +397,19 @@ export default function PublicationDashboard() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      {/* Container de notifications */}
+      <NotificationContainer notifications={notifications} onClose={closeNotification} />
+
+      {/* Modal de confirmation */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        type={confirmModal.type}
+      />
+
       <div className="max-w-7xl mx-auto">
         
         {/* En-tête du Tableau de Bord */}
@@ -256,33 +431,8 @@ export default function PublicationDashboard() {
         </button>
         </div>
 
-        {/* Aperçu des Statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            title="Total Publications"
-            value={statistiques.total}
-            icon={<BarChart className="h-4 w-4" />}
-            color="indigo"
-          />
-          <StatCard
-            title="Programmées"
-            value={statistiques.programmees}
-            icon={<Clock className="h-4 w-4" />}
-            color="yellow"
-          />
-          <StatCard
-            title="Publiées"
-            value={statistiques.publiees}
-            icon={<BarChart className="h-4 w-4" />}
-            color="green"
-          />
-          <StatCard
-            title="En Erreur"
-            value={statistiques.enEchec}
-            icon={<AlertTriangle className="h-4 w-4" />}
-            color="red"
-          />
-        </div>
+        {/* Aperçu des Statistiques - Utilisation du composant séparé */}
+        <PublicationStatView statistiques={statistiques} />
 
         {/* Attention & Programmation */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -397,17 +547,11 @@ export default function PublicationDashboard() {
                       {/* Colonne Publication */}
                       <td className="px-6 py-4">
                         <div className="flex items-start space-x-3">
-                          {(pub.parametres_publication?.image_url || pub.contenu?.image_url) && (
-                            <img 
-                              src={pub.parametres_publication?.image_url || pub.contenu?.image_url} 
-                              alt="Miniature"
-                              className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
-                            />
-                          )}
+                         
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-1">
                               <span className="text-sm font-medium text-gray-900 truncate">
-                                {pub.titre_publication || `Publication #${pub.id}`}
+                                {/* {pub.titre_publication || `Publication #${pub.id}`} */}
                               </span>
                               {pub.url_publication && (
                                 <a 
@@ -425,11 +569,10 @@ export default function PublicationDashboard() {
                               <span className="bg-gray-100 px-2 py-1 rounded font-medium">
                                 {pub.plateforme.toUpperCase()}
                               </span>
-                              {/* <span>Contenu #{pub.id_contenu}</span> */}
                             </div>
                             {pub.message_erreur && (
                               <p className="text-xs text-red-600 mt-1 truncate">
-                                ❌ {pub.message_erreur}
+                                 {pub.message_erreur}
                               </p>
                             )}
                           </div>
@@ -445,7 +588,18 @@ export default function PublicationDashboard() {
                           {(pub.parametres_publication?.image_url || pub.contenu?.image_url) && (
                             <div className="mt-1 flex items-center text-xs text-gray-500">
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                📷 Avec image
+                              <img
+                              src = {pub.parametres_publication?.image_url || pub.contenu?.image_url}
+                              />
+                               {/* {(pub.parametres_publication?.image_url || pub.contenu?.image_url) && (
+                            <Image
+                            width={300}
+                            height={300} 
+                              src={pub.parametres_publication?.image_url || pub.contenu?.image_url} 
+                              alt="Miniature"
+                              className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                            />
+                          )} */}
                               </span>
                             </div>
                           )}
@@ -513,29 +667,55 @@ export default function PublicationDashboard() {
                           )}
                           
                           {pub.statut === StatutPublicationEnum.programme && (
-                            <button
-                              onClick={() => {
-                                const newDate = prompt('Nouvelle date (YYYY-MM-DDTHH:MM:SS):', pub.date_programmee || '');
-                                if (newDate) {
-                                  handleSchedule(pub, newDate);
-                                }
-                              }}
-                              className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
-                              title="Reprogrammer"
-                              disabled={etatsChargement.isMutating}
-                            >
-                              <Clock className="h-4 w-4" />
-                            </button>
+                            <>
+                              <button
+                                onClick={() => {
+                                  const newDate = prompt('Nouvelle date (YYYY-MM-DDTHH:MM:SS):', pub.date_programmee || '');
+                                  if (newDate) {
+                                    handleSchedule(pub, newDate);
+                                  }
+                                }}
+                                className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                                title="Reprogrammer"
+                                disabled={etatsChargement.isMutating}
+                              >
+                                <Clock className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleCancel(pub.id)}
+                                className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                                title="Annuler la programmation"
+                                disabled={etatsChargement.isMutating}
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </button>
+                            </>
                           )}
-                          {pub.statut === StatutPublicationEnum.programme && (
-                            <button
-                              onClick={() => handleCancel(pub.id)}
-                              className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                              title="Annuler la programmation"
-                              disabled={etatsChargement.isMutating}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </button>
+                          
+                          {pub.statut === StatutPublicationEnum.supprime && (
+                            <>
+                              <button
+                                onClick={() => handlePublishNow(pub)}
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                title="Publier maintenant"
+                                disabled={etatsChargement.isMutating}
+                              >
+                                <Send className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const newDate = prompt('Nouvelle date de programmation (YYYY-MM-DDTHH:MM:SS):');
+                                  if (newDate) {
+                                    handleSchedule(pub, newDate);
+                                  }
+                                }}
+                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Reprogrammer"
+                                disabled={etatsChargement.isMutating}
+                              >
+                                <Clock className="h-4 w-4" />
+                              </button>
+                            </>
                           )}
                           
                           <button
@@ -560,6 +740,51 @@ export default function PublicationDashboard() {
           onClose={handleCloseModal} 
         />
       </div>
+
+      <style jsx>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
+        @keyframes scale-in {
+          from {
+            transform: scale(0.9);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+        
+        .animate-scale-in {
+          animation: scale-in 0.2s ease-out;
+        }
+      `}</style>
     </div>
   );
 }

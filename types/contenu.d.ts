@@ -7,6 +7,7 @@ export interface Contenu {
   id_model: number;
   id_template?: number | null;
   id_prompt?: number | null;
+  cutsom_prompt?: string | null;
   titre?: string | null;
   type_contenu: TypeContenu;
   texte?: string | null;
@@ -35,6 +36,7 @@ export interface ContenuPayload {
   id_prompt: number;
   id_model: number;
   id_template?: number;
+  custom_prompt?: string | null;
   titre?: string;
   images?: Array<{           
     url?: string;
@@ -47,6 +49,7 @@ export interface ContenuResponse {
   message: string;
   contenu: string;
   titre: string;
+  image_url?: string;
   type: TypeContenu;
   id: number;
   structure?: {              

@@ -219,7 +219,7 @@ export default function DashboardPage() {
           Bienvenue, <span className="font-semibold text-gray-800">{utilisateur.prenom} {utilisateur.nom}</span>
           {isAdmin && (
             <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-              Admin
+           
             </span>
           )}
         </p>

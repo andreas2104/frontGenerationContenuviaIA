@@ -171,11 +171,12 @@ const Header = ({ isMobileMenuOpen, toggleMobileMenu }) => {
           {utilisateur && (
             <div className='flex items-center gap-2 lg:gap-4 ml-2 lg:ml-4'>
               <span className='hidden sm:inline text-sm'>
+                <span className='font-semibold'>{utilisateur.nom}</span> 
                 <span className='font-semibold'>{utilisateur.prenom}</span>
               </span>
               {isAdmin && (
                 <span className='hidden sm:inline px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-medium'>
-                  Admin
+                  {/* Admin */}
                 </span>
               )}
               <button

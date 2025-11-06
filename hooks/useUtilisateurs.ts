@@ -6,7 +6,7 @@ import {
   updateUtilisateur,
   deleteUtilisateur,
 } from "@/services/utilisateurService";
-import { logout } from "@/services/authService"; // Import depuis authService
+import { logout } from "@/services/authService";
 import { useEffect } from "react";
 
 /**
@@ -16,19 +16,16 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: logout, // Utilise la fonction unifiée de authService
+    mutationFn: logout, 
     onSuccess: (data) => {
       console.log(data.message);
-      // Nettoyer tout le cache
       queryClient.clear();
       queryClient.removeQueries({ queryKey: ['currentUtilisateur'] });
       queryClient.removeQueries({ queryKey: ["utilisateurs"] });
-      // Redirection
-      window.location.href = "/login";
+      window.location.href = "/";
     },
     onError: (error) => {
       console.error('Erreur de déconnexion:', error);
-      // Même en cas d'erreur, on nettoie le cache local
       queryClient.clear();
       queryClient.removeQueries({ queryKey: ['currentUtilisateur'] });
       queryClient.removeQueries({ queryKey: ["utilisateurs"] });
@@ -98,7 +95,6 @@ export const useUtilisateurs = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["utilisateurs"] });
-      // Invalider aussi le current utilisateur si on modifie le profil courant
       queryClient.invalidateQueries({ queryKey: ["currentUtilisateur"] });
     },
   });
