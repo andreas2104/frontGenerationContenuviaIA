@@ -80,14 +80,14 @@ export default function ContenuDetailPage() {
               {contenu.type_contenu === 'image' && contenu.image_url && (
                 <div className="flex justify-center">
                   <img 
-                    src={contenu.image_url} 
+                    src={contenu?.image_url} 
                     alt={contenu.titre ?? 'Image'} 
                     className="rounded-lg max-w-full h-auto max-h-96 object-contain border"
                   />
                 </div>
               )}
             </div>
-
+          
             {/* Section métadonnées si elles existent */}
             {contenu.meta && Object.keys(contenu.meta).length > 0 && (
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">

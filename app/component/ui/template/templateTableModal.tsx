@@ -313,14 +313,14 @@ export default function TemplateTableModal() {
             <h1 className="text-3xl font-bold text-gray-900">
               {isAdmin ? 'Gestion Templates (Admin)' : 'Mes Templates'}
             </h1>
-            <p className="text-gray-600 mt-2">
+            {/* <p className="text-gray-600 mt-2">
               Connecté en tant que: <span className="font-semibold text-gray-800">{utilisateur.prenom} {utilisateur.nom}</span>
               {isAdmin && (
                 <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
                   Admin
                 </span>
               )}
-            </p>
+            </p> */}
             
             {/* Indicateur de recherche active */}
             {searchQuery && (

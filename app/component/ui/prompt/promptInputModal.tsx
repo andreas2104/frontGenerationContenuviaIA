@@ -78,7 +78,7 @@ export default function PrompInputModal({ onClose, prompt, onSuccess }: PrompInp
           setJsonError(null);
         }
       } catch {
-        setJsonError("JSON invalide ⚠️");
+        setJsonError("JSON invalide ");
       }
     } else if (type === 'checkbox') {
       const { checked } = e.target as HTMLInputElement;
@@ -126,11 +126,11 @@ export default function PrompInputModal({ onClose, prompt, onSuccess }: PrompInp
 
       if (prompt) {
         updatePrompt(promptData);
-        toast.success("🔄 Prompt modifié avec succès !");
+        toast.success("Prompt modifié avec succès !");
         if (onSuccess) onSuccess('edit', formData.nom_prompt);
       } else {
         addPrompt(promptData);
-        toast.success("✅ Prompt ajouté avec succès !");
+        toast.success(" Prompt ajouté avec succès !");
         if (onSuccess) onSuccess('add', formData.nom_prompt);
       }
       
@@ -138,7 +138,7 @@ export default function PrompInputModal({ onClose, prompt, onSuccess }: PrompInp
       onClose();
     } catch (error) {
       console.error("Erreur lors de la soumission du formulaire:", error);
-      toast.error("❌ Erreur lors de la soumission du formulaire");
+      toast.error(" Erreur lors de la soumission du formulaire");
     } finally {
       setIsSubmitting(false);
     }
